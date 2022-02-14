@@ -67,4 +67,7 @@ def test_log_batch(dummy_log_stream, example_arn):
 
     logger.log_batch(enteries)
     log = _read_log(dummy_log_stream, "firehose-test")
-    assert log == b"""{"dc_product": "WCIVF", "text": "test1"}{"dc_product": "WDIV", "text": "test2"}{"dc_product": "AGGREGATOR_API", "text": "test3"}"""
+    assert (
+        log
+        == b"""{"dc_product": "WCIVF", "text": "test1"}{"dc_product": "WDIV", "text": "test2"}{"dc_product": "AGGREGATOR_API", "text": "test3"}"""
+    )
