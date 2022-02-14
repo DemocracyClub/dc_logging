@@ -18,3 +18,7 @@ boto3-stubs = {extras = ["firehose", "s3", "sts"], version = "*"}
 
 [requires]
 python_version = "3.8"
+
+[scripts]
+black-check = "black --check ."
+pytest = "pytest --black --flakes --cov-report=xml --cov=dc_logging_client"

@@ -1,0 +1,36 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+
+# Orbs are reusable packages of CircleCI configuration that you may share across projects, enabling you to create encapsulated, parameterized commands, jobs, and executors that can be used across multiple projects.
+# See: https://circleci.com/docs/2.0/orb-intro/
+orbs:
+  python: circleci/python@1.5.0
+  codecov: codecov/codecov@3.1.0
+
+jobs:
+  build-and-test:
+    docker:
+      - image: cimg/python:3.8
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pipenv
+          args: --dev
+      - run:
+          name: Black
+          command: pipenv run black-check
+      - run:
+          name: Run tests
+          command: pipenv run pytest
+      - codecov/upload:
+          file: /home/circleci/project/coverage.xml
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
+
+
+workflows:
+  test_project: 
+    jobs:
+      - build-and-test
