@@ -12,8 +12,7 @@ The logging client provides four things:
 
 ### Installation
 
-[//]: # (TODO:)
-`pip install []`
+`pip install https://github.com/DemocracyClub/dc_logging.git`
 
 ### AWS services
 
@@ -76,22 +75,9 @@ will ensure that the policy is attached to your role.
 
 ### Using the library
 
-#### Pick a target log stream
-
-In this example we will use the DC wide postcode look up stream. Others exist
-
-[//]: # (TODO: document log streams)
-
-Each log stream is defined by a class in the client.
-
-```python
-from dc_logging_client.log_streams import DCWidePostcodeLookupsLogStream
-```
-
-
 #### Create a logger
 
-We have a single logger per log stream. It's recomended that loggers are 
+We have a single logger per log stream. It's recommended that loggers are 
 created globally to the application, for example in a Django settings module.
 
 ```python
