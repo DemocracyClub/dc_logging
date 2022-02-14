@@ -16,8 +16,7 @@ The logging client provides four things:
 
 ### AWS services
 
-Logs are submitted to [AWS Kenisis Firehose](https://aws.amazon.
-com/kinesis/data-firehose/).
+Logs are submitted to [AWS Kenisis Firehose](https://aws.amazon.com/kinesis/data-firehose/).
 
 Understanding Firehose fully shouldn't be required, but some high level 
 basics are useful:
