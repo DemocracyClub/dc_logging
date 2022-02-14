@@ -21,4 +21,4 @@ python_version = "3.8"
 
 [scripts]
 black-check = "black --check ."
-pytest = "pytest --black --flakes --cov-report=xml --cov=dc_logging_client"
+pytest = "pytest --black --flakes --junitxml=test-results/junit.xml --cov=dc_logging_client"

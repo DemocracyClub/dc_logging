@@ -25,10 +25,8 @@ jobs:
           command: pipenv run pytest
       - codecov/upload:
           file: /home/circleci/project/coverage.xml
-      - store_artifacts:
-          path: test-reports
-          destination: test-reports
-
+      - store_test_results:
+          path: /home/circleci/project/test-results/
 
 workflows:
   test_project: 
