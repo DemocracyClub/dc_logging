@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+boto3 = "*"
+
+[dev-packages]
+black = "*"
+ipdb = "*"
+pytest = "*"
+pytest-flakes = "*"
+pytest-black = "*"
+pytest-cov = "*"
+moto = {extras = ["firehose", "sts"], version = "*"}
+boto3-stubs = {extras = ["firehose", "s3", "sts"], version = "*"}
+
+[requires]
+python_version = "3.8"
