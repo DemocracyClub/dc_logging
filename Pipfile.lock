@@ -140,11 +140,11 @@
                 "sts"
             ],
             "hashes": [
-                "sha256:267d908545db626560a8f6ba791549dfaf49de70461d9363f7fa8fd842fcbf12",
-                "sha256:da2fd9ea924b43382c88dc3c98e9bb6d684c0ed37cea12563d108e8741f7ae1d"
+                "sha256:1ac0b74ea6c84b408ca2688ecfc9cb7c5d758f1504c9e97df5f8689cb32d4ff8",
+                "sha256:6d669bc743c09b60aefb7916203402db5788801370adc72cb057912dbffce35b"
             ],
             "index": "pypi",
-            "version": "==1.20.52"
+            "version": "==1.21.0"
         },
         "botocore": {
             "hashes": [
