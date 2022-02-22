@@ -7,16 +7,41 @@ version: 2.1
 orbs:
   python: circleci/python@1.5.0
   codecov: codecov/codecov@3.1.0
+  node: circleci/node@5.0.0
 
 jobs:
-  build-and-test:
+  install_and_update_dependencies:
     docker:
-      - image: cimg/python:3.8
+      - image: cimg/python:3.8.12
+    working_directory: ~/repo
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "Pipfile.lock" }}
+      - run: &install-pipenv pip install -U pipenv urllib3 pip --quiet --no-input
       - python/install-packages:
           pkg-manager: pipenv
           args: --dev
+      - run: pipenv run pipenv check # before save_cache so an insecure cache is never saved
+      - save_cache:
+          when: on_success
+          paths:
+            - ~/.local/share/virtualenvs/
+          key: v1-dependencies-{{ checksum "Pipfile.lock" }}
+  
+  run-tests:
+    docker:
+      - image: cimg/python:3.8
+    working_directory: ~/repo/
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/repo/
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "Pipfile.lock" }}
+      - run: *install-pipenv
       - run:
           name: Black
           command: pipenv run black-check
@@ -27,8 +52,44 @@ jobs:
           file: /home/circleci/project/coverage.xml
       - store_test_results:
           path: /home/circleci/project/test-results/
+  
+  deploy_on_dev:
+    working_directory: ~/repo/
+    docker:
+    - image: cimg/python:3.8-node
+    parameters:
+      dc-environment:
+        type: enum
+        enum: [ development, production ]
+    steps:
+    - checkout
+    - attach_workspace:
+        at: ~/repo/
+    - restore_cache:
+        keys:
+        - v1-dependencies-{{ checksum "Pipfile.lock" }}
+    - run: *install-pipenv
+    - node/install-packages
+    - run:
+        name: CDK Synth
+        command: cd dc_logging_aws && pipenv run npx aws-cdk synth
+    - run:
+        name: CDK Deploy
+        command: cd dc_logging_aws && pipenv run npx aws-cdk deploy --require-approval=never
 
 workflows:
-  test_project: 
+  version: 2
+
+  build_test_deploy: 
     jobs:
-      - build-and-test
+      - install_and_update_dependencies
+      - run-tests:
+          requires:
+            - install_and_update_dependencies
+    
+      - deploy_on_dev:
+          name: cdk_deploy_development
+          dc-environment: development
+          requires:
+            - run-tests
+          context: [ deployment-development-monitoring ]

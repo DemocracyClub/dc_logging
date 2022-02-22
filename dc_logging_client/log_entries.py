@@ -45,6 +45,7 @@ class DummyLogEntry(BaseLogEntry, ValidDCProductMixin):
 class PostcodeLogEntry(BaseLogEntry, ValidDCProductMixin):
     postcode: str
     timestamp: Union[datetime.datetime, str] = ""
+    api_key: str = ""
 
     def __post_init__(self):
         super().__post_init__()
