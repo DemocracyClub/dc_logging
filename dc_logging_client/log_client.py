@@ -88,7 +88,6 @@ class BaseLoggingClient(abc.ABC):
                      are sent to the local `logger` client.
         :param assume_role_arn: The ARN of the role to assume
         """
-
         self.fake = fake
         self.assume_role_arn = self.get_log_stream_arn(assume_role_arn)
         if not fake:
@@ -106,7 +105,7 @@ class BaseLoggingClient(abc.ABC):
             raise ValueError(
                 f"{type(data)} isn't a valid log entry for stream '{self.stream_name}'"
             )
-        logging.debug(f"{self.stream_name}\t{data.as_log_line()}")
+        logger.debug(f"{self.stream_name}\t{data.as_log_line()}")
         if not self.fake:
             self.firehose.put_record(
                 DeliveryStreamName=self.stream_name,
@@ -114,7 +113,7 @@ class BaseLoggingClient(abc.ABC):
             )
 
     def log_batch(self, batch):
-        logging.debug(f"{self.stream_name}\tBATCH: {len(batch)}")
+        logger.debug(f"{self.stream_name}\tBATCH: {len(batch)}")
         if not self.fake:
             self.firehose.put_record_batch(
                 DeliveryStreamName=self.stream_name,

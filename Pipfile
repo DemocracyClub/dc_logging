@@ -5,6 +5,12 @@ name = "pypi"
 
 [packages]
 boto3 = "*"
+"aws-cdk.aws-kinesisfirehose" = "*"
+"aws-cdk.aws-s3" = "*"
+"aws-cdk.core" = "*"
+"aws-cdk.cx-api" = "*"
+"aws-cdk.aws-kinesisfirehose-destinations" = "*"
+"aws-cdk.aws-glue" = "*"
 
 [dev-packages]
 black = "*"

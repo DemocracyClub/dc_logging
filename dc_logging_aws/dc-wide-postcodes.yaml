@@ -1,0 +1,161 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: DC Logging CF template
+Parameters:
+  DestinationBucketName:
+    Description: The bucket name to store logs in
+    Type: String
+Resources:
+#  PostcodeSearchesGlueTable:
+#    Type: AWS::Glue::Table
+#    Properties:
+#      CatalogId: String
+#      DatabaseName: "dc-logs"
+#      TableInput:
+#        Name: "dc-postcode-searches"
+#        Description: All postcode searches across DC's products
+#        TableType: EXTERNAL_TABLE
+#        Parameters:
+#          compressionType: none
+#          classification: orc
+#        StorageDescriptor:
+#          StoredAsSubDirectories: false
+#          InputFormat: "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat"
+#          OutputFormat: "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat"
+#          BucketColumns: [ ]
+#          NumberOfBuckets: -1
+#          SerdeInfo:
+#            SerializationLibrary: "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe"
+#            Parameters:
+#              "serialization.format": "1"
+#          Compressed: false
+#          Location: !Sub "s3://${DestinationBucketName}/dc-postcode-searches"
+#          Columns:
+#            - Name: ts
+#              Type: bigint
+#              Comment: UNIX timestamp in milliseconds of the event
+#            - Name: uid
+#              Type: string
+#              Comment: Unique identifier of the user
+#            - Name: category
+#              Type: string
+#              Comment: Event group name
+#            - Name: action
+#              Type: string
+#              Comment: Event interaction type
+#            - Name: label
+#              Type: string
+#              Comment: Additional information of the event
+#          
+  
+  
+  
+  
+#  
+  DCPostcodeSearchesLogStream:
+    Type: AWS::KinesisFirehose::DeliveryStream
+    Properties:
+      DeliveryStreamName: "postcodesearches"
+      DeliveryStreamType: DirectPut
+      S3DestinationConfiguration:
+        BucketARN:
+          Fn::Join:
+            - ''
+            - - "arn:aws:s3:::"
+              - Ref: DestinationBucketName
+        Prefix: "dc-postcode-searches"
+        BufferingHints:
+          IntervalInSeconds: 900
+          SizeInMBs: 100
+        DataFormatConversionConfiguration:
+          Enabled: true
+          InputFormatConfiguration:
+            Deserializer:
+              HiveJsonSerDe
+          OutputFormatConfiguration:
+            Serializer:
+              OrcSerDe
+
+        CloudWatchLoggingOptions:
+          Enabled: 'true'
+        CompressionFormat: GZIP
+        EncryptionConfiguration:
+          NoEncryptionConfig: NoEncryption
+
+
+
+
+
+
+
+
+
+
+
+
+#  FirehoseDeliveryIAMRole:
+#    Type: AWS::IAM::Role
+#    Properties:
+#      AssumeRolePolicyDocument:
+#        Version: '2012-10-17'
+#        Statement:
+#          - Sid: ''
+#            Effect: Allow
+#            Principal:
+#              Service: firehose.amazonaws.com
+#            Action: sts:AssumeRole
+#            Condition:
+#              StringEquals:
+#                sts:ExternalId: ACCOUNT_NUMBER
+#  FirehoseDeliveryIAMPolicy:
+#    Type: AWS::IAM::Policy
+#    Properties:
+#      PolicyName:
+#        Fn::Join:
+#          - ''
+#          - - test-kinesis-fh-
+#      PolicyDocument:
+#        Version: '2012-10-17'
+#        Statement:
+#          - Effect: Allow
+#            Action:
+#              - s3:AbortMultipartUpload
+#              - s3:GetBucketLocation
+#              - s3:GetObject
+#              - s3:ListBucket
+#              - s3:ListBucketMultipartUploads
+#              - s3:PutObject
+#            Resource:
+#              - arn:aws:s3:::test-bucket-name/cloudformation-test/kinesis-fh*
+#          - Effect: Allow
+#            Action:
+#              - kinesis:DescribeStream
+#              - kinesis:GetShardIterator
+#              - kinesis:GetRecords
+#            Resource:
+#              Fn::GetAtt:
+#                - KinesisStream
+#                - Arn
+#      Roles:
+#        - Ref: FirehoseDeliveryIAMRole
+#    DependsOn:
+#      - KinesisStream
+#Outputs:
+#  kinesisStreamArn:
+#    Description: Kinesis Stream ARN
+#    Value:
+#      Fn::GetAtt:
+#        - KinesisStream
+#        - Arn
+#  firehoseDeliveryStreamArn:
+#    Description: Firehose Delivery Stream ARN
+#    Value:
+#      Fn::GetAtt:
+#        - KinesisFirehoseDeliveryStream
+#        - Arn
+#  firehoseDeliveryRoleArn:
+#    Description: Firehose Delivery Role ARN
+#    Value:
+#      Fn::GetAtt:
+#        - FirehoseDeliveryIAMRole
+#        - Arn
