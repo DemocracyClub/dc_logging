@@ -22,7 +22,10 @@ logger = logging.getLogger(__name__)
 
 
 class FirehoseClientWrapper:
-    def __init__(self, assume_role_arn: str, region: str = "eu-west-2"):
+    def __init__(
+        self, assume_role_arn: str, region: str = "eu-west-2", direct_connection=False
+    ):
+        self.direct_connection = direct_connection
         self.region = region
         self.assume_role_arn = assume_role_arn
         self.client: Optional[FirehoseClient] = None
@@ -30,6 +33,12 @@ class FirehoseClientWrapper:
 
     def connect(self):
         self.client = None
+        if self.direct_connection:
+            self.client: FirehoseClient = boto3.client(
+                "firehose",
+                region_name=self.region,
+            )
+            return
         sts_default_provider_chain = boto3.client("sts", region_name=self.region)
         role_to_assume_arn = self.assume_role_arn
         role_session_name = "test_session"
@@ -79,9 +88,7 @@ class BaseLoggingClient(abc.ABC):
     dc_product = DCProduct
 
     def __init__(
-        self,
-        fake: bool = False,
-        assume_role_arn: str = None,
+        self, fake: bool = False, assume_role_arn: str = None, direct_connection=False
     ):
         """
         :param fake: If True, no data is actually logged. DEBUG entries
@@ -91,9 +98,11 @@ class BaseLoggingClient(abc.ABC):
         self.fake = fake
         self.assume_role_arn = self.get_log_stream_arn(assume_role_arn)
         if not fake:
-            if not self.assume_role_arn:
+            if not self.assume_role_arn and not direct_connection:
                 raise ValueError("`assume_role_arn` when not faking")
-            self.firehose = FirehoseClientWrapper(self.assume_role_arn)
+            self.firehose = FirehoseClientWrapper(
+                self.assume_role_arn, direct_connection=direct_connection
+            )
 
     def get_log_stream_arn(self, arn_arg):
         if arn_arg:
@@ -117,7 +126,7 @@ class BaseLoggingClient(abc.ABC):
         if not self.fake:
             self.firehose.put_record_batch(
                 DeliveryStreamName=self.stream_name,
-                Records=[{"Data": data.as_log_line(newline=False)} for data in batch],
+                Records=[{"Data": data.as_log_line()} for data in batch],
             )
 
 
