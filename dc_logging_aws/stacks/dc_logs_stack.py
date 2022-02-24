@@ -1,15 +1,16 @@
+import sys
 import typing
 from datetime import datetime
 from typing import Type
 
-from aws_cdk.core import Stack
 import aws_cdk.aws_glue as glue
-import aws_cdk.aws_s3 as s3
+import aws_cdk.aws_iam as iam
 import aws_cdk.aws_kinesisfirehose as firehose
 import aws_cdk.aws_kinesisfirehose_destinations as firehose_destinations
+import aws_cdk.aws_s3 as s3
+import boto3
+from aws_cdk.core import Stack
 from constructs import Construct
-
-import sys
 
 sys.path.append("..")
 
@@ -19,9 +20,43 @@ from dc_logging_client.log_client import BaseLoggingClient
 class DCLogsStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
+        self.create_iam_role()
         self.database = self.get_database()
         self.bucket = self.get_bucket()
         self.tables = self.create_tables_and_streams()
+
+    def create_iam_role(self):
+        policy = iam.Policy(
+            self,
+            "cross-account-put-record",
+            policy_name="cross-account-put-record",
+            statements=[
+                iam.PolicyStatement(
+                    actions=[
+                        "firehose:PutRecord",
+                        "firehose:PutRecordBatch",
+                    ],
+                    resources=["*"],
+                )
+            ],
+        )
+        # Ideally we'd get this from SSM directly in the cloudofrmation,
+        # however there is a CDK python bug reported here:
+        # https://github.com/aws/aws-cdk/issues/924
+        # Because of this, we have to use boto to get the list of accounts at
+        # deploy time
+        client = boto3.client("ssm", region_name="eu-west-2")
+        allowed_accounts = client.get_parameter(Name="assume_role_aws_accounts")[
+            "Parameter"
+        ]["Value"].split(",")
+        for account in allowed_accounts:
+            role = iam.Role(
+                self,
+                f"put-record-from-{account}",
+                assumed_by=iam.AccountPrincipal(account),
+                role_name=f"put-record-from-{account}",
+            )
+            role.attach_inline_policy(policy)
 
     def get_database(self):
         return glue.Database(
