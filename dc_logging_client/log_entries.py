@@ -50,4 +50,4 @@ class PostcodeLogEntry(BaseLogEntry, ValidDCProductMixin):
     def __post_init__(self):
         super().__post_init__()
         if not self.timestamp:
-            self.datetime = datetime.datetime.now()
+            self.timestamp = datetime.datetime.now()
