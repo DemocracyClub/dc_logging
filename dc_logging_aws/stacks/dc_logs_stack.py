@@ -1,3 +1,4 @@
+import os
 import sys
 import typing
 from datetime import datetime
@@ -67,7 +68,9 @@ class DCLogsStack(Stack):
 
     def get_bucket(self):
         return s3.Bucket.from_bucket_name(
-            self, "DestinationLogsBucket", bucket_name="dc-monitoring-dev-logging"
+            self,
+            "DestinationLogsBucket",
+            bucket_name=os.environ.get("LOGS_BUCKET_NAME"),
         )
 
     def create_tables_and_streams(self):
