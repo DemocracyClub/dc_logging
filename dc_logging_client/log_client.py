@@ -4,6 +4,7 @@ import os
 from typing import Optional
 
 import boto3
+from botocore.exceptions import BotoCoreError
 from mypy_boto3_firehose import FirehoseClient
 
 from .log_entries import (
@@ -67,7 +68,7 @@ class FirehoseClientWrapper:
         """
         try:
             return method(*args, **kwargs)
-        except ConnectionError:
+        except BotoCoreError:
             self.connect()
             return method(*args, **kwargs)
 
