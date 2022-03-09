@@ -10,7 +10,7 @@ import aws_cdk.aws_kinesisfirehose as firehose
 import aws_cdk.aws_kinesisfirehose_destinations as firehose_destinations
 import aws_cdk.aws_s3 as s3
 import boto3
-from aws_cdk.core import Stack
+from aws_cdk.core import Stack, Duration
 from constructs import Construct
 
 sys.path.append("..")
@@ -56,6 +56,7 @@ class DCLogsStack(Stack):
                 f"put-record-from-{account}",
                 assumed_by=iam.AccountPrincipal(account),
                 role_name=f"put-record-from-{account}",
+                max_session_duration=Duration.hours(12),
             )
             role.attach_inline_policy(policy)
 
