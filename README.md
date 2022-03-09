@@ -12,7 +12,67 @@ The logging client provides four things:
 
 ### Installation
 
-`pip install https://github.com/DemocracyClub/dc_logging.git`
+Install the desired version using pip or pipenv.
+
+For pipenv, especially on projects deployed on AWS Lambda, it's advised to use
+the `zip` package from the release page:
+
+`pipenv install https://github.
+com/DemocracyClub/dc_logging/archive/refs/tags/[VERSION].zip`
+
+
+### Using the library
+
+#### Logging classes
+
+The library contains a single logger class per log stream. A log stream 
+represents the category of log, and all logs for a single stream are stored 
+together.
+
+##### DCWidePostcodeLoggingClient
+Currently, there is a single log stream defined: `DCWidePostcodeLoggingClient`.
+
+This is designed to log all postcodes entered from any DC site. Care should 
+be taken not to "double count" entered postcodes. For example, if an app is 
+processing a lookup from another project that also logs postcodes, make sure 
+that only one log entry is created per search.
+
+
+#### Create a logger
+
+It's recommended that loggers are  created globally to the application, for 
+example in a Django settings module.
+
+```python
+# settings.py
+from dc_logging_client.log_client import DCWidePostcodeLoggingClient
+POSTCODE_LOGGER = DCWidePostcodeLoggingClient
+```
+
+#### Create an entry
+
+At the point you want to create a log entry
+
+```python
+from dc_logging_client.log_client import DCWidePostcodeLoggingClient
+POSTCODE_LOGGER = DCWidePostcodeLoggingClient()
+entry = POSTCODE_LOGGER.entry_class(
+    postcode="SW1A 1AA", 
+    dc_product=POSTCODE_LOGGER.dc_product.wcivf
+)
+```
+
+Note the `dc_product`. This is an Enum that is validated against a set of known
+and supported DC products. If you are trying to use this library in a DC
+product that's not supported then please make a PR to this repo.
+
+And log it
+
+````python
+POSTCODE_LOGGER.log(entry)
+````
+
+
 
 ### AWS services
 
@@ -106,38 +166,3 @@ execution role already attached to the resource.
 For local development this means using `SSO` to authenticate. The SSO admin 
 will ensure that the policy is attached to your role.
 
-### Using the library
-
-#### Create a logger
-
-We have a single logger per log stream. It's recommended that loggers are 
-created globally to the application, for example in a Django settings module.
-
-```python
-# settings.py
-from dc_logging_client.log_client import DCWidePostcodeLoggingClient
-POSTCODE_LOGGER = DCWidePostcodeLoggingClient
-```
-
-#### Create an entry
-
-At the point you want to create a log entry
-
-```python
-from dc_logging_client.log_client import DCWidePostcodeLoggingClient
-POSTCODE_LOGGER = DCWidePostcodeLoggingClient()
-entry = POSTCODE_LOGGER.entry_class(
-    postcode="SW1A 1AA", 
-    dc_product=POSTCODE_LOGGER.dc_product.wcivf
-)
-```
-
-Note the `dc_product`. This is an Enum that is validated against a set of known
-and supported DC products. If you are trying to use this library in a DC 
-product that's not supported then please make a PR to this repo.
-
-And log it
-
-````python
-POSTCODE_LOGGER.log(entry)
-````
