@@ -1,10 +1,9 @@
 import abc
 import logging
 import os
-from typing import Optional
 
 import boto3
-from botocore.exceptions import BotoCoreError
+from cachetools import cached, TTLCache
 from mypy_boto3_firehose import FirehoseClient
 
 from .log_entries import (
@@ -29,54 +28,35 @@ class FirehoseClientWrapper:
         self.direct_connection = direct_connection
         self.region = region
         self.assume_role_arn = assume_role_arn
-        self.client: Optional[FirehoseClient] = None
-        self.connect()
 
+    @property
+    def client(self) -> FirehoseClient:
+        return self.connect()
+
+    @cached(TTLCache(maxsize=10, ttl=3000))
     def connect(self):
-        self.client = None
         if self.direct_connection:
-            self.client: FirehoseClient = boto3.client(
+            return boto3.client(
                 "firehose",
                 region_name=self.region,
             )
-            return
         sts_default_provider_chain = boto3.client("sts", region_name=self.region)
         role_to_assume_arn = self.assume_role_arn
         role_session_name = "test_session"
         response = sts_default_provider_chain.assume_role(
-            RoleArn=role_to_assume_arn, RoleSessionName=role_session_name
+            RoleArn=role_to_assume_arn,
+            RoleSessionName=role_session_name,
+            DurationSeconds=3600,
         )
         creds = response["Credentials"]
 
-        self.client: FirehoseClient = boto3.client(
+        return boto3.client(
             "firehose",
             aws_access_key_id=creds["AccessKeyId"],
             aws_secret_access_key=creds["SecretAccessKey"],
             aws_session_token=creds["SessionToken"],
             region_name=self.region,
         )
-
-    def _func_with_reconnect(self, method, *args, **kwargs):
-        """
-        wraps `func` but will re-attempt connection if it's
-        closed
-
-        :param method: the Firehose client method
-        :param args:
-        :param kwargs:
-        :return:
-        """
-        try:
-            return method(*args, **kwargs)
-        except BotoCoreError:
-            self.connect()
-            return method(*args, **kwargs)
-
-    def put_record(self, *args, **kwargs):
-        return self._func_with_reconnect(self.client.put_record, *args, **kwargs)
-
-    def put_record_batch(self, *args, **kwargs):
-        return self._func_with_reconnect(self.client.put_record_batch, *args, **kwargs)
 
 
 class BaseLoggingClient(abc.ABC):
@@ -117,7 +97,7 @@ class BaseLoggingClient(abc.ABC):
             )
         logger.debug(f"{self.stream_name}\t{data.as_log_line()}")
         if not self.fake:
-            self.firehose.put_record(
+            self.firehose.client.put_record(
                 DeliveryStreamName=self.stream_name,
                 Record={"Data": data.as_log_line()},
             )
@@ -125,7 +105,7 @@ class BaseLoggingClient(abc.ABC):
     def log_batch(self, batch):
         logger.debug(f"{self.stream_name}\tBATCH: {len(batch)}")
         if not self.fake:
-            self.firehose.put_record_batch(
+            self.firehose.client.put_record_batch(
                 DeliveryStreamName=self.stream_name,
                 Records=[{"Data": data.as_log_line()} for data in batch],
             )
