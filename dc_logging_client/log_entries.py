@@ -2,7 +2,7 @@ import abc
 import datetime
 import enum
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Union
 
 
@@ -37,17 +37,25 @@ class ValidDCProductMixin:
 
 
 @dataclass
-class DummyLogEntry(BaseLogEntry, ValidDCProductMixin):
-    text: str
+class UTMMixin:
+    utm_source: Union[None, str] = field(default_factory=str)
+    utm_campaign: Union[None, str] = field(default_factory=str)
 
 
 @dataclass
-class PostcodeLogEntry(BaseLogEntry, ValidDCProductMixin):
-    postcode: str
+class DummyLogEntry(BaseLogEntry, UTMMixin, ValidDCProductMixin):
+    text: str = field(default_factory=str)
+
+
+@dataclass
+class PostcodeLogEntry(BaseLogEntry, UTMMixin, ValidDCProductMixin):
+    postcode: str = field(default_factory=str)
     timestamp: Union[datetime.datetime, str] = ""
     api_key: str = ""
 
     def __post_init__(self):
         super().__post_init__()
+        if not self.postcode:
+            raise ValueError("Postcode required")
         if not self.timestamp:
             self.timestamp = datetime.datetime.now()
