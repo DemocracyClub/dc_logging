@@ -468,11 +468,11 @@
                 "sts"
             ],
             "hashes": [
-                "sha256:a3894f0d1ebced581338ed8593293b4ec4a4b047fe97b870b07113a2558f5e06",
-                "sha256:f2df89b19530f2076a4ad076098fdde9667ae4a11d613217bb08469c3e67296a"
+                "sha256:3324592b223c6b2fb75c614d7b2042851b413087ec19e9f3a835a588903126df",
+                "sha256:ad5c8f67e77e71f54ef0e036dd6f00aa65090a5f151c7978fd3a0cff107dca8b"
             ],
             "index": "pypi",
-            "version": "==1.21.17"
+            "version": "==1.21.39"
         },
         "botocore": {
             "hashes": [
