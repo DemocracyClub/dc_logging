@@ -40,6 +40,7 @@ class ValidDCProductMixin:
 class UTMMixin:
     utm_source: Union[None, str] = field(default_factory=str)
     utm_campaign: Union[None, str] = field(default_factory=str)
+    utm_medium: Union[None, str] = field(default_factory=str)
 
 
 @dataclass
