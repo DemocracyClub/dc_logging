@@ -39,7 +39,7 @@ def test_log(dummy_log_stream: S3Client, example_arn):
     log = _read_log(dummy_log_stream, "firehose-test")
     assert (
         log
-        == b"""{"dc_product": "WCIVF", "text": "test", "utm_campaign": "", "utm_source": ""}\n"""
+        == b"""{"dc_product": "WCIVF", "text": "test", "utm_campaign": "", "utm_medium": "", "utm_source": ""}\n"""
     )
 
 
@@ -72,5 +72,5 @@ def test_log_batch(dummy_log_stream, example_arn):
     log = _read_log(dummy_log_stream, "firehose-test")
     assert (
         log
-        == b"""{"dc_product": "WCIVF", "text": "test1", "utm_campaign": "", "utm_source": ""}\n{"dc_product": "WDIV", "text": "test2", "utm_campaign": "", "utm_source": ""}\n{"dc_product": "AGGREGATOR_API", "text": "test3", "utm_campaign": "", "utm_source": ""}\n"""
+        == b"""{"dc_product": "WCIVF", "text": "test1", "utm_campaign": "", "utm_medium": "", "utm_source": ""}\n{"dc_product": "WDIV", "text": "test2", "utm_campaign": "", "utm_medium": "", "utm_source": ""}\n{"dc_product": "AGGREGATOR_API", "text": "test3", "utm_campaign": "", "utm_medium": "", "utm_source": ""}\n"""
     )
