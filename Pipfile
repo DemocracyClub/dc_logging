@@ -13,7 +13,7 @@ boto3 = "*"
 "aws-cdk.aws-glue" = "*"
 mypy-boto3-organizations = "*"
 mypy-boto3-ssm = "*"
-cachetools = "*"
+cachetools = "==v4.2.4"
 
 [dev-packages]
 black = "*"
