@@ -773,11 +773,11 @@
                 "sts"
             ],
             "hashes": [
-                "sha256:43a0c89eee6518ffaf77142b5ed3e0c1522f97a22368af2c90af5a8914dcdce9",
-                "sha256:6a2f369b71e3803f13cf0ba036eb649ef3b8013d781f13e7c844ff636ce6e7c5"
+                "sha256:4f87045a97326b38c8cee9420752b38c0c5281828442febf4c3e409f98dadb7d",
+                "sha256:86ba08512fe848bd8687cd4517ac0d9bcaf829bcec6196ece8a77b8aaf9dfc77"
             ],
             "index": "pypi",
-            "version": "==3.0.7"
+            "version": "==3.1.5"
         },
         "mypy-boto3-firehose": {
             "hashes": [
@@ -1036,7 +1036,7 @@
                 "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc",
                 "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"
             ],
-            "markers": "python_version < '3.11'",
+            "markers": "python_version >= '3.7'",
             "version": "==2.0.1"
         },
         "traitlets": {
