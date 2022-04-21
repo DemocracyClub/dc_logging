@@ -95,7 +95,7 @@ class DCLogsStack(Stack):
         types = {
             str: glue.Schema.STRING,
             int: glue.Schema.INTEGER,
-            datetime: glue.Schema.DATE,
+            datetime: glue.Schema.TIMESTAMP,
         }
         return types.get(field_type, glue.Schema.STRING)
 
