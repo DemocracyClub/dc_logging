@@ -2,9 +2,7 @@
 import os
 
 from aws_cdk import core as cdk
-
 from stacks.dc_logs_stack import DCLogsStack
-
 
 app = cdk.App()
 DCLogsStack(

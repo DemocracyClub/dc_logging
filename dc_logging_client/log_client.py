@@ -3,15 +3,10 @@ import logging
 import os
 
 import boto3
-from cachetools import cached, TTLCache
+from cachetools import TTLCache, cached
 from mypy_boto3_firehose import FirehoseClient
 
-from .log_entries import (
-    BaseLogEntry,
-    PostcodeLogEntry,
-    DCProduct,
-    DummyLogEntry,
-)
+from .log_entries import BaseLogEntry, DCProduct, DummyLogEntry, PostcodeLogEntry
 
 __all__ = [
     "DCWidePostcodeLoggingClient",
