@@ -4,18 +4,18 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-boto3 = ">=1.20,<1.30"
 "aws-cdk.aws-kinesisfirehose" = "*"
 "aws-cdk.aws-s3" = "*"
 "aws-cdk.core" = "*"
 "aws-cdk.cx-api" = "*"
 "aws-cdk.aws-kinesisfirehose-destinations" = "*"
 "aws-cdk.aws-glue" = "*"
-mypy-boto3-organizations = "*"
-mypy-boto3-ssm = "*"
 cachetools = "==v4.2.4"
 
 [dev-packages]
+boto3 = ">=1.20,<1.30"
+mypy-boto3-organizations = "*"
+mypy-boto3-ssm = "*"
 black = "*"
 ipdb = "*"
 pytest = "*"
