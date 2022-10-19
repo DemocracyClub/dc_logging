@@ -10,6 +10,12 @@ The logging client provides four things:
 3. Classes for creating log entries
 4. Validation that everything is being used properly
 
+### Local Development
+* Install Python dependencies: `pipenv install --dev`
+* Run the test suite: `pytest`
+* Run lint checks: `pytest --flakes`
+* Auto-format: `black .`
+
 ### Installation
 
 Install the desired version using pip or pipenv.
