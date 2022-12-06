@@ -1,7 +1,7 @@
 import pytest
 from mypy_boto3_s3 import S3Client
 
-from dc_logging_client.log_client import DummyLoggingClient, DCWidePostcodeLoggingClient
+from dc_logging_client.log_client import DCWidePostcodeLoggingClient, DummyLoggingClient
 from dc_logging_client.log_entries import PostcodeLogEntry
 
 

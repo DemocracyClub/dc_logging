@@ -3,15 +3,14 @@ import logging
 import os
 
 import boto3
-from cachetools import cached, TTLCache
-from mypy_boto3_firehose import FirehoseClient
+from cachetools import TTLCache, cached
+from typing_extensions import TYPE_CHECKING
 
-from .log_entries import (
-    BaseLogEntry,
-    PostcodeLogEntry,
-    DCProduct,
-    DummyLogEntry,
-)
+
+if TYPE_CHECKING:
+    from mypy_boto3_firehose import FirehoseClient
+
+from .log_entries import BaseLogEntry, DCProduct, DummyLogEntry, PostcodeLogEntry
 
 __all__ = [
     "DCWidePostcodeLoggingClient",
@@ -30,7 +29,7 @@ class FirehoseClientWrapper:
         self.assume_role_arn = assume_role_arn
 
     @property
-    def client(self) -> FirehoseClient:
+    def client(self) -> "FirehoseClient":
         return self.connect()
 
     @cached(TTLCache(maxsize=10, ttl=3000))

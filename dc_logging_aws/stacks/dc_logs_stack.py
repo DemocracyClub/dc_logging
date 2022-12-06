@@ -10,7 +10,7 @@ import aws_cdk.aws_kinesisfirehose as firehose
 import aws_cdk.aws_kinesisfirehose_destinations as firehose_destinations
 import aws_cdk.aws_s3 as s3
 import boto3
-from aws_cdk.core import Stack, Duration
+from aws_cdk.core import Duration, Stack
 from constructs import Construct
 
 sys.path.append("..")

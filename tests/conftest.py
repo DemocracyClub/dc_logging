@@ -2,7 +2,7 @@ import os
 
 import boto3
 import pytest
-from moto import mock_sts, mock_firehose, mock_s3
+from moto import mock_firehose, mock_s3, mock_sts
 from mypy_boto3_s3 import S3Client
 
 from dc_logging_client import DCWidePostcodeLoggingClient
