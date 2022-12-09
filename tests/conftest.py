@@ -11,7 +11,7 @@ from dc_logging_client.log_client import DummyLoggingClient
 
 @pytest.fixture(scope="function")
 def example_arn(aws_credentials):
-    return "arn:aws:iam::012345678910:role/test-role"
+    return "arn:aws:iam::123456789012:role/test-role"
 
 
 @pytest.fixture(scope="function")
@@ -38,8 +38,8 @@ def sts(aws_credentials):
 
 @pytest.fixture(scope="function")
 def firehose(aws_credentials):
-    with mock_firehose():
-        yield
+    with mock_firehose() as fh:
+        yield boto3.client('firehose', region_name='eu-west-2')
 
 
 def _base_mocked_log_stream(logging_client):
@@ -70,8 +70,7 @@ def dummy_log_stream(sts, firehose):
     with mock_s3():
         s3_client: S3Client = boto3.client("s3")
         s3_client.create_bucket(Bucket="firehose-test")
-        client = boto3.client("firehose", region_name="eu-west-2")
-        client.create_delivery_stream(
+        firehose.create_delivery_stream(
             DeliveryStreamName=DummyLoggingClient.stream_name,
             ExtendedS3DestinationConfiguration={
                 "BucketARN": "arn:aws:s3:::firehose-test",
@@ -108,4 +107,4 @@ def dc_wide_postcode_log_stream(sts, firehose):
                 "S3BackupMode": "Disabled",
             },
         )
-        yield s3_client
+        yield client
