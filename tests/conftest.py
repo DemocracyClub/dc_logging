@@ -38,8 +38,8 @@ def sts(aws_credentials):
 
 @pytest.fixture(scope="function")
 def firehose(aws_credentials):
-    with mock_firehose() as fh:
-        yield boto3.client('firehose', region_name='eu-west-2')
+    with mock_firehose():
+        yield boto3.client("firehose", region_name="eu-west-2")
 
 
 def _base_mocked_log_stream(logging_client):
