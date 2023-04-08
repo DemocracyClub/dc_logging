@@ -8,7 +8,9 @@ app = cdk.App()
 DCLogsStack(
     app,
     "DCLogsStack",
-    env=cdk.Environment(account=os.getenv("CDK_DEFAULT_ACCOUNT"), region="eu-west-2"),
+    env=cdk.Environment(
+        account=os.getenv("CDK_DEFAULT_ACCOUNT"), region="eu-west-2"
+    ),
 )
 
 app.synth()

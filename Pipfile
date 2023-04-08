@@ -16,19 +16,21 @@ wheel = "==0.38.4"
 [dev-packages]
 boto3 = ">=1.20,<1.30"
 mypy-boto3-organizations = "*"
-mypy-boto3-ssm = "*"
-black = "*"
+mypy-boto3-ssm = "1.26.97"
+black = "23.3.0"
+ruff = "==0.0.261"
 ipdb = "*"
-pytest = "*"
+pytest = "7.2.2"
 pytest-flakes = "*"
 pytest-black = "*"
 pytest-cov = "*"
-moto = {extras = ["firehose", "sts"], version = "*"}
-boto3-stubs = {extras = ["firehose", "s3", "sts", "organizations"], version = "*"}
+moto = {extras = ["firehose", "sts"], version = "4.1.6"}
+boto3-stubs = {extras = ["firehose", "s3", "sts", "organizations"], version = "1.26.108"}
 
 [requires]
 python_version = "3.8"
 
 [scripts]
 black-check = "black --check ."
+ruff-check = "ruff ."
 pytest = "pytest --black --flakes --junitxml=test-results/junit.xml --cov=dc_logging_client"

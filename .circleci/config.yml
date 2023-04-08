@@ -46,6 +46,9 @@ jobs:
           name: Black
           command: pipenv run black-check
       - run:
+          name: Ruff
+          command: pipenv run ruff-check
+      - run:
           name: Run tests
           command: pipenv run pytest
       - codecov/upload:

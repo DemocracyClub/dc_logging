@@ -6,11 +6,15 @@ import boto3
 from cachetools import TTLCache, cached
 from typing_extensions import TYPE_CHECKING
 
-
 if TYPE_CHECKING:
     from mypy_boto3_firehose import FirehoseClient
 
-from .log_entries import BaseLogEntry, DCProduct, DummyLogEntry, PostcodeLogEntry
+from .log_entries import (
+    BaseLogEntry,
+    DCProduct,
+    DummyLogEntry,
+    PostcodeLogEntry,
+)
 
 __all__ = [
     "DCWidePostcodeLoggingClient",
@@ -22,7 +26,10 @@ logger = logging.getLogger(__name__)
 
 class FirehoseClientWrapper:
     def __init__(
-        self, assume_role_arn: str, region: str = "eu-west-2", direct_connection=False
+        self,
+        assume_role_arn: str,
+        region: str = "eu-west-2",
+        direct_connection=False,
     ):
         self.direct_connection = direct_connection
         self.region = region
@@ -39,7 +46,9 @@ class FirehoseClientWrapper:
                 "firehose",
                 region_name=self.region,
             )
-        sts_default_provider_chain = boto3.client("sts", region_name=self.region)
+        sts_default_provider_chain = boto3.client(
+            "sts", region_name=self.region
+        )
         role_to_assume_arn = self.assume_role_arn
         role_session_name = "test_session"
         response = sts_default_provider_chain.assume_role(
@@ -68,7 +77,10 @@ class BaseLoggingClient(abc.ABC):
     dc_product = DCProduct
 
     def __init__(
-        self, fake: bool = False, assume_role_arn: str = None, direct_connection=False
+        self,
+        fake: bool = False,
+        assume_role_arn: str = None,
+        direct_connection=False,
     ):
         """
         :param fake: If True, no data is actually logged. DEBUG entries

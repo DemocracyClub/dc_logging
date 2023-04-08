@@ -15,7 +15,7 @@ from constructs import Construct
 
 sys.path.append("..")
 
-from dc_logging_client.log_client import BaseLoggingClient
+from dc_logging_client.log_client import BaseLoggingClient  # noqa
 
 
 class DCLogsStack(Stack):
@@ -47,9 +47,9 @@ class DCLogsStack(Stack):
         # Because of this, we have to use boto to get the list of accounts at
         # deploy time
         client = boto3.client("ssm", region_name="eu-west-2")
-        allowed_accounts = client.get_parameter(Name="assume_role_aws_accounts")[
-            "Parameter"
-        ]["Value"].split(",")
+        allowed_accounts = client.get_parameter(
+            Name="assume_role_aws_accounts"
+        )["Parameter"]["Value"].split(",")
         for account in allowed_accounts:
             role = iam.Role(
                 self,
