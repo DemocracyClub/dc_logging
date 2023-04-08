@@ -54,7 +54,9 @@ def _base_mocked_log_stream(logging_client):
                 "BufferingHints": {"IntervalInSeconds": 300, "SizeInMBs": 5},
                 "CompressionFormat": "UNCOMPRESSED",
                 "DataFormatConversionConfiguration": {"Enabled": False},
-                "EncryptionConfiguration": {"NoEncryptionConfig": "NoEncryption"},
+                "EncryptionConfiguration": {
+                    "NoEncryptionConfig": "NoEncryption"
+                },
                 "Prefix": "AWSLogs/000000000000/route53querylogs/eu-west-2/",
                 "ProcessingConfiguration": {"Enabled": False, "Processors": []},
                 "RoleARN": "arn:aws:iam::000000000000:role/query-log-firehose-P8V0BH6695TQ7HD",
@@ -77,7 +79,9 @@ def dummy_log_stream(sts, firehose):
                 "BufferingHints": {"IntervalInSeconds": 300, "SizeInMBs": 5},
                 "CompressionFormat": "UNCOMPRESSED",
                 "DataFormatConversionConfiguration": {"Enabled": False},
-                "EncryptionConfiguration": {"NoEncryptionConfig": "NoEncryption"},
+                "EncryptionConfiguration": {
+                    "NoEncryptionConfig": "NoEncryption"
+                },
                 "Prefix": "AWSLogs/000000000000/route53querylogs/eu-west-2/",
                 "ProcessingConfiguration": {"Enabled": False, "Processors": []},
                 "RoleARN": "arn:aws:iam::000000000000:role/query-log-firehose-P8V0BH6695TQ7HD",
@@ -100,7 +104,9 @@ def dc_wide_postcode_log_stream(sts, firehose):
                 "BufferingHints": {"IntervalInSeconds": 300, "SizeInMBs": 5},
                 "CompressionFormat": "UNCOMPRESSED",
                 "DataFormatConversionConfiguration": {"Enabled": False},
-                "EncryptionConfiguration": {"NoEncryptionConfig": "NoEncryption"},
+                "EncryptionConfiguration": {
+                    "NoEncryptionConfig": "NoEncryption"
+                },
                 "Prefix": "AWSLogs/000000000000/route53querylogs/eu-west-2/",
                 "ProcessingConfiguration": {"Enabled": False, "Processors": []},
                 "RoleARN": "arn:aws:iam::000000000000:role/query-log-firehose-P8V0BH6695TQ7HD",

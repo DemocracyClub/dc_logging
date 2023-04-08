@@ -1,7 +1,10 @@
 import pytest
 from mypy_boto3_s3 import S3Client
 
-from dc_logging_client.log_client import DCWidePostcodeLoggingClient, DummyLoggingClient
+from dc_logging_client.log_client import (
+    DCWidePostcodeLoggingClient,
+    DummyLoggingClient,
+)
 from dc_logging_client.log_entries import PostcodeLogEntry
 
 
@@ -13,10 +16,14 @@ def test_log_client_init_errors():
     assert DummyLoggingClient(fake=True)
 
 
-def test_log_client_with_env_var(log_stream_arn_env, dc_wide_postcode_log_stream):
+def test_log_client_with_env_var(
+    log_stream_arn_env, dc_wide_postcode_log_stream
+):
     assert DCWidePostcodeLoggingClient(fake=False)
     logger = DCWidePostcodeLoggingClient()
-    entry = logger.entry_class(dc_product=logger.dc_product.wcivf, postcode="SW1A 1AA")
+    entry = logger.entry_class(
+        dc_product=logger.dc_product.wcivf, postcode="SW1A 1AA"
+    )
     logger.log(entry)
 
 
@@ -35,7 +42,9 @@ def _read_log(s3_client, bucket_name):
 
 def test_log(dummy_log_stream: S3Client, example_arn):
     logger = DummyLoggingClient(assume_role_arn=example_arn)
-    logger.log(logger.entry_class(text="test", dc_product=logger.dc_product.wcivf))
+    logger.log(
+        logger.entry_class(text="test", dc_product=logger.dc_product.wcivf)
+    )
     log = _read_log(dummy_log_stream, "firehose-test")
     assert (
         log
@@ -47,7 +56,9 @@ def test_log_invalid_entry(dummy_log_stream, example_arn):
     logger = DummyLoggingClient(assume_role_arn=example_arn)
     with pytest.raises(ValueError) as e_info:
         logger.log(
-            PostcodeLogEntry(postcode="SW1A 1AA", dc_product=logger.dc_product.wcivf)
+            PostcodeLogEntry(
+                postcode="SW1A 1AA", dc_product=logger.dc_product.wcivf
+            )
         )
     assert str(e_info.value) == (
         """<class 'dc_logging_client.log_entries.PostcodeLogEntry'>"""
@@ -65,7 +76,9 @@ def test_log_batch(dummy_log_stream, example_arn):
     enteries = [
         logger.entry_class(text="test1", dc_product=logger.dc_product.wcivf),
         logger.entry_class(text="test2", dc_product=logger.dc_product.wdiv),
-        logger.entry_class(text="test3", dc_product=logger.dc_product.aggregator_api),
+        logger.entry_class(
+            text="test3", dc_product=logger.dc_product.aggregator_api
+        ),
     ]
 
     logger.log_batch(enteries)

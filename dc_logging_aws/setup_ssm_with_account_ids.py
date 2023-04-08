@@ -18,18 +18,24 @@ groups = org.list_children(
     ParentId=org.list_roots()["Roots"][0]["Id"], ChildType="ORGANIZATIONAL_UNIT"
 )
 for group in groups["Children"]:
-    group_info = org.describe_organizational_unit(OrganizationalUnitId=group["Id"])
+    group_info = org.describe_organizational_unit(
+        OrganizationalUnitId=group["Id"]
+    )
     group_name = group_info["OrganizationalUnit"]["Name"]
     if group_name == "Production accounts":
         account_list = prod_accounts
     else:
         account_list = dev_and_stage_accounts
 
-    accounts_in_group = org.list_children(ParentId=group["Id"], ChildType="ACCOUNT")
+    accounts_in_group = org.list_children(
+        ParentId=group["Id"], ChildType="ACCOUNT"
+    )
     for account in accounts_in_group["Children"]:
         account_id = account["Id"]
         account_list.append(account_id)
-        account_name = org.describe_account(AccountId=account_id)["Account"]["Name"]
+        account_name = org.describe_account(AccountId=account_id)["Account"][
+            "Name"
+        ]
         if account_name == "Dev - Monitoring - DC":
             dev_monitoring_account = account_id
         if account_name == "Production - Monitoring - DC":
@@ -44,7 +50,9 @@ for account_id, account_list in (
 
     sts: STSClient = boto3.client("sts")
 
-    response = sts.assume_role(RoleArn=role_arn, RoleSessionName="monitoring_ssm_role")
+    response = sts.assume_role(
+        RoleArn=role_arn, RoleSessionName="monitoring_ssm_role"
+    )
     creds = response["Credentials"]
 
     assumed_ssm: SSMClient = boto3.client(
