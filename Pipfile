@@ -11,7 +11,7 @@ name = "pypi"
 "aws-cdk.aws-kinesisfirehose-destinations" = "*"
 "aws-cdk.aws-glue" = "*"
 cachetools = "==v5.2.0"
-wheel = "==0.38.4"
+wheel = "==0.40.0"
 
 [dev-packages]
 boto3 = ">=1.20,<1.30"
