@@ -10,7 +10,7 @@ name = "pypi"
 "aws-cdk.cx-api" = "*"
 "aws-cdk.aws-kinesisfirehose-destinations" = "*"
 "aws-cdk.aws-glue" = "*"
-cachetools = "==v5.2.0"
+cachetools = "==v5.3.0"
 wheel = "==0.38.4"
 
 [dev-packages]
