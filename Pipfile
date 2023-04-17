@@ -25,7 +25,7 @@ pytest-flakes = "*"
 pytest-black = "*"
 pytest-cov = "*"
 moto = {extras = ["firehose", "sts"], version = "4.1.6"}
-boto3-stubs = {extras = ["firehose", "s3", "sts", "organizations"], version = "1.26.108"}
+boto3-stubs = {extras = ["firehose", "s3", "sts", "organizations"], version = "1.26.114"}
 
 [requires]
 python_version = "3.8"
