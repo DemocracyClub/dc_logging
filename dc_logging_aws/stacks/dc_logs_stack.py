@@ -4,13 +4,15 @@ import typing
 from datetime import datetime
 from typing import Type
 
-import aws_cdk.aws_glue as glue
+import aws_cdk.aws_glue_alpha as glue
 import aws_cdk.aws_iam as iam
-import aws_cdk.aws_kinesisfirehose as firehose
-import aws_cdk.aws_kinesisfirehose_destinations as firehose_destinations
+import aws_cdk.aws_kinesisfirehose_alpha as firehose
+import aws_cdk.aws_kinesisfirehose_destinations_alpha as firehose_destinations
+import aws_cdk.aws_lambda as aws_lambda
+import aws_cdk.aws_lambda_python_alpha as lambda_python
 import aws_cdk.aws_s3 as s3
 import boto3
-from aws_cdk.core import Duration, Stack
+from aws_cdk import Duration, Stack
 from constructs import Construct
 
 sys.path.append("..")
@@ -142,3 +144,51 @@ class DCLogsStack(Stack):
             ],
             delivery_stream_name=cls.stream_name,
         )
+
+
+def create_ingest_role(self, cls):
+    policy = iam.Policy(
+        self,
+        f"ingest-{cls.stream_name}",
+        policy_name=f"ingest-{cls.stream_name}",
+        statements=[
+            iam.PolicyStatement(
+                actions=[
+                    "firehose:PutRecord",
+                    "firehose:PutRecordBatch",
+                ],
+                resources=["*"],
+            )
+        ],
+    )
+    # Ideally we'd get this from SSM directly in the CloudFormation,
+    # however there is a CDK python bug reported here:
+    # https://github.com/aws/aws-cdk/issues/924
+    # Because of this, we have to use boto to get the list of accounts at
+    # deploy time
+    client = boto3.client("ssm", region_name="eu-west-2")
+    allowed_accounts = client.get_parameter(Name="assume_role_aws_accounts")[
+        "Parameter"
+    ]["Value"].split(",")
+    for account in allowed_accounts:
+        role = iam.Role(
+            self,
+            f"put-record-from-{account}",
+            assumed_by=iam.AccountPrincipal(account),
+            role_name=f"put-record-from-{account}",
+            max_session_duration=Duration.hours(12),
+        )
+        role.attach_inline_policy(policy)
+
+
+def create_lambda_function(self, cls):
+    lambda_python.PythonFunction(
+        self,
+        f"ingest-{cls.stream_name}",
+        function_name=f"ingest-{cls.stream_name}",
+        entry="./dc_logging_aws/lambdas/ingest",
+        index="handler.py",
+        runtime=aws_lambda.Runtime.PYTHON_3_10,
+        timeout=Duration.minutes(2),
+        role=self.ingest_role,
+    )
