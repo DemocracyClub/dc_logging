@@ -43,8 +43,8 @@ jobs:
             - v1-dependencies-{{ checksum "Pipfile.lock" }}
       - run: *install-pipenv
       - run:
-          name: Black
-          command: pipenv run black-check
+          name: Check formatting (ruff format)
+          command: pipenv run ruff-format-check
       - run:
           name: Ruff
           command: pipenv run ruff-check

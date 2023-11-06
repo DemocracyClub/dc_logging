@@ -171,4 +171,3 @@ execution role already attached to the resource.
 
 For local development this means using `SSO` to authenticate. The SSO admin 
 will ensure that the policy is attached to your role.
-
