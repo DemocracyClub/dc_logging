@@ -1,6 +1,7 @@
 import pytest
 from mypy_boto3_s3 import S3Client
 
+from dc_logging_client import DCProduct
 from dc_logging_client.log_client import (
     DCWidePostcodeLoggingClient,
     DummyLoggingClient,
@@ -68,6 +69,11 @@ def test_log_invalid_entry(dummy_log_stream, example_arn):
     with pytest.raises(ValueError) as e_info:
         logger.log(logger.entry_class(text="test", dc_product="new product"))  # type: ignore
     assert str(e_info.value) == ("""'new product' is not currently supported""")
+
+    # Allow creating an entry from a string value of the product enum
+    entry = logger.entry_class(text="test", dc_product="WCIVF")
+    assert entry.dc_product == DCProduct.wcivf.value
+
 
 
 def test_log_batch(dummy_log_stream, example_arn):

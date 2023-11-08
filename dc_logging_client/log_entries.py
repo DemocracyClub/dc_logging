@@ -15,6 +15,14 @@ class DCProduct(enum.Enum):
     ynr = "YNR"
     election_leaflets = "ELECTION_LEAFLETS"
 
+    @classmethod
+    def from_str_value(cls, value):
+        for enum_key, enum_value in cls.__members__.items():
+            if value == getattr(cls, enum_key).value:
+                return getattr(cls, enum_key)
+        raise ValueError("No item with string value found")
+
+
 
 @dataclass
 class BaseLogEntry(abc.ABC):
@@ -32,7 +40,10 @@ class ValidDCProductMixin:
 
     def __post_init__(self):
         if not isinstance(self.dc_product, DCProduct):
-            raise ValueError(f"'{self.dc_product}' is not currently supported")
+            try:
+                self.dc_product = DCProduct.from_str_value(self.dc_product)
+            except ValueError:
+                raise ValueError(f"'{self.dc_product}' is not currently supported")
         self.dc_product = self.dc_product.value
 
 
