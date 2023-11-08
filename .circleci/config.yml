@@ -64,6 +64,8 @@ jobs:
       dc-environment:
         type: enum
         enum: [ development, production ]
+    environment:
+      DC_ENVIRONMENT: <<parameters.dc-environment>>
     steps:
     - checkout
     - attach_workspace:

@@ -25,6 +25,7 @@ class DCLogsStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
         org_client = boto3.client("organizations", region_name=self.region)
         self.org_id = org_client.describe_organization()["Organization"]["Id"]
+        self.dc_environment = self.node.try_get_context("dc-environment")
         self.create_iam_role()
         self.database = self.get_database()
         self.bucket = self.get_bucket()
@@ -159,7 +160,7 @@ class DCLogsStack(Stack):
         stream_ingest_lambda = lambda_python.PythonFunction(
             self,
             f"ingest-{cls.stream_name}",
-            function_name=f"ingest-{cls.stream_name}",
+            function_name=f"ingest-{cls.stream_name}-{self.dc_environment}",
             entry="./dc_logging_aws/lambdas/ingest",
             index="handler.py",
             runtime=aws_lambda.Runtime.PYTHON_3_10,
