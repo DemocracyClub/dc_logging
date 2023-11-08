@@ -23,6 +23,8 @@ from dc_logging_client.log_client import BaseLoggingClient  # noqa
 class DCLogsStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
+        org_client = boto3.client("organizations", region_name=self.region)
+        self.org_id = org_client.describe_organization()["Organization"]["Id"]
         self.create_iam_role()
         self.database = self.get_database()
         self.bucket = self.get_bucket()
@@ -85,6 +87,7 @@ class DCLogsStack(Stack):
         for cls in stream_class_list:
             tables.append(self.create_table_from_stream_class(cls))
             streams.append(self.create_stream(cls))
+            self.create_lambda_function(cls)
         return tables
 
     def _field_type_to_glue_type(self, field_type):
@@ -145,50 +148,59 @@ class DCLogsStack(Stack):
             delivery_stream_name=cls.stream_name,
         )
 
-
-def create_ingest_role(self, cls):
-    policy = iam.Policy(
-        self,
-        f"ingest-{cls.stream_name}",
-        policy_name=f"ingest-{cls.stream_name}",
-        statements=[
-            iam.PolicyStatement(
-                actions=[
-                    "firehose:PutRecord",
-                    "firehose:PutRecordBatch",
-                ],
-                resources=["*"],
-            )
-        ],
-    )
-    # Ideally we'd get this from SSM directly in the CloudFormation,
-    # however there is a CDK python bug reported here:
-    # https://github.com/aws/aws-cdk/issues/924
-    # Because of this, we have to use boto to get the list of accounts at
-    # deploy time
-    client = boto3.client("ssm", region_name="eu-west-2")
-    allowed_accounts = client.get_parameter(Name="assume_role_aws_accounts")[
-        "Parameter"
-    ]["Value"].split(",")
-    for account in allowed_accounts:
-        role = iam.Role(
+    def create_lambda_function(self, cls):
+        client_layer = lambda_python.PythonLayerVersion(
             self,
-            f"put-record-from-{account}",
-            assumed_by=iam.AccountPrincipal(account),
-            role_name=f"put-record-from-{account}",
-            max_session_duration=Duration.hours(12),
+            "logging_client_layer",
+            compatible_runtimes=[aws_lambda.Runtime.PYTHON_3_10],
+            entry="./dc_logging_client",
         )
-        role.attach_inline_policy(policy)
 
+        stream_ingest_lambda = lambda_python.PythonFunction(
+            self,
+            f"ingest-{cls.stream_name}",
+            function_name=f"ingest-{cls.stream_name}",
+            entry="./dc_logging_aws/lambdas/ingest",
+            index="handler.py",
+            runtime=aws_lambda.Runtime.PYTHON_3_10,
+            timeout=Duration.minutes(2),
+            environment={
+                "STREAM_NAME": cls.stream_name,
+                "ENTRY_CLASS": cls.entry_class.__name__,
+            },
+            layers=[client_layer],
+        )
 
-def create_lambda_function(self, cls):
-    lambda_python.PythonFunction(
-        self,
-        f"ingest-{cls.stream_name}",
-        function_name=f"ingest-{cls.stream_name}",
-        entry="./dc_logging_aws/lambdas/ingest",
-        index="handler.py",
-        runtime=aws_lambda.Runtime.PYTHON_3_10,
-        timeout=Duration.minutes(2),
-        role=self.ingest_role,
-    )
+        # TODO: Lambda doesn't currently support aws:PrincipalOrgPaths
+        # meaning we can't limit invocation to account paths (e.g only dev accounts).
+        # This isn't ideal as in theory a dev account could log to prod, or (worse)
+        # prod to dev. When Lambda supports aws:PrincipalOrgPaths we should change
+        # the principal to be:
+        # ```
+        # iam.PrincipalWithConditions(
+        #     iam.OrganizationPrincipal("[org id]"),
+        #     conditions={
+        #         "ForAnyValue:StringLike": {
+        #             "aws:PrincipalOrgPaths": [
+        #                 "[path]"
+        #             ]
+        #         },
+        #     },
+        # )
+        # ```
+
+        stream_ingest_lambda.add_permission(
+            f"cross-org-invoke-{cls.stream_name}",
+            principal=iam.OrganizationPrincipal(self.org_id),
+            action="lambda:InvokeFunction",
+        )
+
+        stream_ingest_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["firehose:PutRecord"],
+                resources=[
+                    f"arn:aws:firehose:*:*:deliverystream/{cls.stream_name}"
+                ],
+                effect=iam.Effect.ALLOW,
+            )
+        )
