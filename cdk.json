@@ -1,5 +1,5 @@
 {
-  "app": "python3 app.py",
+  "app": "python3 dc_logging_aws/app.py",
   "watch": {
     "include": [
       "**"

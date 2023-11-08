@@ -75,10 +75,10 @@ jobs:
     - node/install-packages
     - run:
         name: CDK Synth
-        command: cd dc_logging_aws && pipenv run npx aws-cdk synth
+        command: pipenv run npx aws-cdk synth
     - run:
         name: CDK Deploy
-        command: cd dc_logging_aws && pipenv run npx aws-cdk deploy --require-approval=never
+        command: pipenv run npx aws-cdk deploy --require-approval=never
 
 workflows:
   version: 2
