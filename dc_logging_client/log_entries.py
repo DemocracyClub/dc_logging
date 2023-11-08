@@ -23,7 +23,6 @@ class DCProduct(enum.Enum):
         raise ValueError("No item with string value found")
 
 
-
 @dataclass
 class BaseLogEntry(abc.ABC):
     def as_log_line(self, newline=True):
@@ -43,7 +42,9 @@ class ValidDCProductMixin:
             try:
                 self.dc_product = DCProduct.from_str_value(self.dc_product)
             except ValueError:
-                raise ValueError(f"'{self.dc_product}' is not currently supported")
+                raise ValueError(
+                    f"'{self.dc_product}' is not currently supported"
+                )
         self.dc_product = self.dc_product.value
 
 

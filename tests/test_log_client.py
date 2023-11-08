@@ -73,23 +73,3 @@ def test_log_invalid_entry(dummy_log_stream, example_arn):
     # Allow creating an entry from a string value of the product enum
     entry = logger.entry_class(text="test", dc_product="WCIVF")
     assert entry.dc_product == DCProduct.wcivf.value
-
-
-
-def test_log_batch(dummy_log_stream, example_arn):
-    logger = DummyLoggingClient(assume_role_arn=example_arn)
-
-    enteries = [
-        logger.entry_class(text="test1", dc_product=logger.dc_product.wcivf),
-        logger.entry_class(text="test2", dc_product=logger.dc_product.wdiv),
-        logger.entry_class(
-            text="test3", dc_product=logger.dc_product.aggregator_api
-        ),
-    ]
-
-    logger.log_batch(enteries)
-    log = _read_log(dummy_log_stream, "firehose-test")
-    assert (
-        log
-        == b"""{"dc_product": "WCIVF", "text": "test1", "utm_campaign": "", "utm_medium": "", "utm_source": ""}\n{"dc_product": "WDIV", "text": "test2", "utm_campaign": "", "utm_medium": "", "utm_source": ""}\n{"dc_product": "AGGREGATOR_API", "text": "test3", "utm_campaign": "", "utm_medium": "", "utm_source": ""}\n"""
-    )

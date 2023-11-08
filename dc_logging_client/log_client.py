@@ -113,14 +113,6 @@ class BaseLoggingClient(abc.ABC):
                 Record={"Data": data.as_log_line()},
             )
 
-    def log_batch(self, batch):
-        logger.debug(f"{self.stream_name}\tBATCH: {len(batch)}")
-        if not self.fake:
-            self.firehose.client.put_record_batch(
-                DeliveryStreamName=self.stream_name,
-                Records=[{"Data": data.as_log_line()} for data in batch],
-            )
-
 
 class DummyLoggingClient(BaseLoggingClient):
     stream_name = "dummy"
