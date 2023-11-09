@@ -12,6 +12,8 @@ name = "pypi"
 "constructs" = ">=10.0.0"
 cachetools = "==v5.2.0"
 wheel = "==0.38.4"
+dc-logging-utils = {path = "."}
+urllib3 = "<2"
 
 [dev-packages]
 boto3 = ">=1.20,<1.30"
@@ -26,7 +28,7 @@ moto = {extras = ["firehose", "sts", "awslambda", "apigateway", "proxy"], versio
 boto3-stubs = {extras = ["firehose", "s3", "sts", "organizations", "lambda"], version = "1.28.80"}
 
 [requires]
-python_version = "3.8"
+python_version = "3.10"
 
 [scripts]
 ruff-check = "ruff ."
