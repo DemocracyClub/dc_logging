@@ -56,11 +56,6 @@ class UTMMixin:
 
 
 @dataclass
-class DummyLogEntry(BaseLogEntry, UTMMixin, ValidDCProductMixin):
-    text: str = field(default_factory=str)
-
-
-@dataclass
 class PostcodeLogEntry(BaseLogEntry, UTMMixin, ValidDCProductMixin):
     postcode: str = field(default_factory=str)
     timestamp: Union[datetime.datetime, str] = ""

@@ -11,7 +11,7 @@ entry_class_name = os.environ["ENTRY_CLASS"]
 def handler(event, context):
     entry_class = getattr(log_entries, entry_class_name)
     log_entry: log_entries.BaseLogEntry = entry_class(**event)
-    firehose_client.put_record(
+    return firehose_client.put_record(
         DeliveryStreamName=stream_name,
         Record={"Data": log_entry.as_log_line()},
     )
