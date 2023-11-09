@@ -50,10 +50,11 @@ together.
 ##### DCWidePostcodeLoggingClient
 Currently, there is a single log stream defined: `DCWidePostcodeLoggingClient`.
 
-This is designed to log all postcodes entered from any DC site. Care should 
-be taken not to "double count" entered postcodes. For example, if an app is 
-processing a lookup from another project that also logs postcodes, make sure 
-that only one log entry is created per search.
+This is designed to log all postcodes entered from any DC site. 
+
+If the application in turn calls the developers.democracyclub.org.uk API then
+`calls_devs_dc_api` MUST be set to `True`. This will prevent double counting 
+usage when querying later.
 
 
 #### Create a logger

@@ -60,6 +60,7 @@ class PostcodeLogEntry(BaseLogEntry, UTMMixin, ValidDCProductMixin):
     postcode: str = field(default_factory=str)
     timestamp: Union[datetime.datetime, str] = ""
     api_key: str = ""
+    calls_devs_dc_api: bool = False
 
     def __post_init__(self):
         super().__post_init__()

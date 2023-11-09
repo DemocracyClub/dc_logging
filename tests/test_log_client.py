@@ -40,6 +40,7 @@ def test_log(cdk, mock_log_streams):
         "utm_campaign": "",
         "utm_medium": "",
         "utm_source": "",
+        "calls_devs_dc_api": False,
     }
 
 
