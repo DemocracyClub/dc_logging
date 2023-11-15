@@ -68,8 +68,8 @@ jobs:
           key: v1-test_stack_cfn
 
   deploy:
-    docker:
-    - image: cimg/python:3.10-node
+    machine:
+      image: ubuntu-2204:2022.10.2
     parameters:
       dc-environment:
         type: enum
