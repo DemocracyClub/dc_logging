@@ -11,15 +11,14 @@ orbs:
 
 jobs:
   install_and_update_dependencies:
-    docker:
-      - image: cimg/python:3.8.12
-    working_directory: ~/repo
+    machine:
+      image: ubuntu-2204:2023.10.1
     steps:
       - checkout
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "Pipfile.lock" }}
-      - run: &install-pipenv pip install -U pipenv urllib3 pip --quiet --no-input
+            - v3-machine-dependencies-{{ checksum "Pipfile.lock" }}
+      - run: &install-pipenv pip3 install -U pipenv pip --quiet --no-input
       - python/install-packages:
           pkg-manager: pipenv
           args: --dev
@@ -28,26 +27,33 @@ jobs:
           when: on_success
           paths:
             - ~/.local/share/virtualenvs/
-          key: v1-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v3-machine-dependencies-{{ checksum "Pipfile.lock" }}
 
   run-tests:
-    docker:
-      - image: cimg/python:3.8.12
-    working_directory: ~/repo/
+    machine:
+      image: ubuntu-2204:2023.10.1
     steps:
       - checkout
       - attach_workspace:
           at: ~/repo/
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "Pipfile.lock" }}
+            - v3-machine-dependencies-{{ checksum "Pipfile.lock" }}
+            - v1-test_stack_cfn
       - run: *install-pipenv
+      - python/install-packages:
+          pkg-manager: pipenv
+          args: --dev
+      - node/install-packages
       - run:
-          name: Black
-          command: pipenv run black-check
+          name: Check formatting (ruff format)
+          command: pipenv run ruff-format-check
       - run:
           name: Ruff
           command: pipenv run ruff-check
+      - run:
+          name: Make CloudFormation Template for testing
+          command: make cfn_template_for_tests
       - run:
           name: Run tests
           command: pipenv run pytest
@@ -55,30 +61,33 @@ jobs:
           file: /home/circleci/project/coverage.xml
       - store_test_results:
           path: /home/circleci/project/test-results/
+      - save_cache:
+          when: on_success
+          paths:
+            - ~/repo/tests/test_stack_cfn
+          key: v1-test_stack_cfn
 
   deploy:
-    working_directory: ~/repo/
     docker:
-    - image: cimg/python:3.8.12-node
+    - image: cimg/python:3.10-node
     parameters:
       dc-environment:
         type: enum
         enum: [ development, production ]
+    environment:
+      DC_ENVIRONMENT: <<parameters.dc-environment>>
     steps:
     - checkout
     - attach_workspace:
         at: ~/repo/
-    - restore_cache:
-        keys:
-        - v1-dependencies-{{ checksum "Pipfile.lock" }}
     - run: *install-pipenv
     - node/install-packages
     - run:
         name: CDK Synth
-        command: cd dc_logging_aws && pipenv run npx aws-cdk synth
+        command: pipenv run npx aws-cdk synth
     - run:
         name: CDK Deploy
-        command: cd dc_logging_aws && pipenv run npx aws-cdk deploy --require-approval=never
+        command: pipenv run npx aws-cdk deploy --require-approval=never
 
 workflows:
   version: 2
@@ -89,6 +98,7 @@ workflows:
       - run-tests:
           requires:
             - install_and_update_dependencies
+          context: [ deployment-development-monitoring ]
 
       - deploy:
           name: cdk_deploy_development

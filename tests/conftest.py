@@ -1,27 +1,47 @@
 import os
+import signal
+import subprocess
+import time
+import zipfile
+from io import BytesIO
+from pathlib import Path
 
 import boto3
 import pytest
-from moto import mock_firehose, mock_s3, mock_sts
+import yaml
+from moto import (
+    mock_cloudformation,
+    mock_firehose,
+    mock_lambda,
+    mock_s3,
+    mock_ssm,
+)
+from mypy_boto3_firehose import FirehoseClient
 from mypy_boto3_s3 import S3Client
 
 from dc_logging_client import DCWidePostcodeLoggingClient
-from dc_logging_client.log_client import DummyLoggingClient
 
 
-@pytest.fixture(scope="function")
-def example_arn(aws_credentials):
-    return "arn:aws:iam::123456789012:role/test-role"
+@pytest.fixture(scope="session", autouse=True)
+def moto_proxy_start():
+    os.environ["TEST_PROXY_MODE"] = "true"
+    moto_proxy = subprocess.Popen(
+        "moto_proxy -H 0.0.0.0",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        shell=True,
+        preexec_fn=os.setsid,
+    )
+    time.sleep(2)
+    assert not moto_proxy.poll(), moto_proxy.stdout.read().decode("utf-8")
+    yield moto_proxy
+    os.killpg(os.getpgid(moto_proxy.pid), signal.SIGTERM)
 
 
-@pytest.fixture(scope="function")
-def log_stream_arn_env(example_arn):
-    os.environ["FIREHOSE_ACCOUNT_ARN"] = example_arn
-
-
-@pytest.fixture(scope="function")
-def aws_credentials():
+@pytest.fixture(scope="session")
+def aws_credentials(moto_proxy_start):
     """Mocked AWS Credentials for moto."""
+    os.environ["TEST_SERVER_MODE"] = "true"
     os.environ["AWS_ACCESS_KEY_ID"] = "testing"
     os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
     os.environ["AWS_SECURITY_TOKEN"] = "testing"
@@ -30,87 +50,124 @@ def aws_credentials():
     os.environ.pop("AWS_PROFILE", None)
 
 
-@pytest.fixture(scope="function")
-def sts(aws_credentials):
-    with mock_sts():
+@pytest.fixture(scope="session")
+def mock_aws_services(aws_credentials):
+    with mock_ssm(), mock_s3(), mock_lambda(), mock_cloudformation(), mock_firehose():
         yield
 
 
-@pytest.fixture(scope="function")
-def firehose(aws_credentials):
-    with mock_firehose():
-        yield boto3.client("firehose", region_name="eu-west-2")
+@pytest.fixture(scope="session")
+def mock_log_streams(mock_aws_services):
+    s3_client: S3Client = boto3.client("s3")
+    firehose_client: FirehoseClient = boto3.client(
+        "firehose", region_name="eu-west-2"
+    )
+    s3_client.create_bucket(Bucket="test-bucket")
 
-
-def _base_mocked_log_stream(logging_client):
-    with mock_s3():
-        s3_client: S3Client = boto3.client("s3")
-        s3_client.create_bucket(Bucket="firehose-test")
-        client = boto3.client("firehose", region_name="eu-west-2")
-        client.create_delivery_stream(
-            DeliveryStreamName=logging_client.stream_name,
+    stream_class_list = [DCWidePostcodeLoggingClient]
+    for cls in stream_class_list:
+        firehose_client.create_delivery_stream(
+            DeliveryStreamName=cls.stream_name,
             ExtendedS3DestinationConfiguration={
-                "BucketARN": "arn:aws:s3:::firehose-test",
-                "BufferingHints": {"IntervalInSeconds": 300, "SizeInMBs": 5},
+                "BucketARN": "arn:aws:s3:::test-bucket",
+                "BufferingHints": {
+                    "IntervalInSeconds": 300,
+                    "SizeInMBs": 5,
+                },
                 "CompressionFormat": "UNCOMPRESSED",
                 "DataFormatConversionConfiguration": {"Enabled": False},
                 "EncryptionConfiguration": {
                     "NoEncryptionConfig": "NoEncryption"
                 },
                 "Prefix": "AWSLogs/000000000000/route53querylogs/eu-west-2/",
-                "ProcessingConfiguration": {"Enabled": False, "Processors": []},
-                "RoleARN": "arn:aws:iam::000000000000:role/query-log-firehose-P8V0BH6695TQ7HD",
-                "S3BackupMode": "Disabled",
-            },
-        )
-        yield s3_client
-
-
-# TODO: DRY this up: can we pass in the logging client somehow?
-@pytest.fixture(scope="function")
-def dummy_log_stream(sts, firehose):
-    with mock_s3():
-        s3_client: S3Client = boto3.client("s3")
-        s3_client.create_bucket(Bucket="firehose-test")
-        firehose.create_delivery_stream(
-            DeliveryStreamName=DummyLoggingClient.stream_name,
-            ExtendedS3DestinationConfiguration={
-                "BucketARN": "arn:aws:s3:::firehose-test",
-                "BufferingHints": {"IntervalInSeconds": 300, "SizeInMBs": 5},
-                "CompressionFormat": "UNCOMPRESSED",
-                "DataFormatConversionConfiguration": {"Enabled": False},
-                "EncryptionConfiguration": {
-                    "NoEncryptionConfig": "NoEncryption"
+                "ProcessingConfiguration": {
+                    "Enabled": False,
+                    "Processors": [],
                 },
-                "Prefix": "AWSLogs/000000000000/route53querylogs/eu-west-2/",
-                "ProcessingConfiguration": {"Enabled": False, "Processors": []},
                 "RoleARN": "arn:aws:iam::000000000000:role/query-log-firehose-P8V0BH6695TQ7HD",
                 "S3BackupMode": "Disabled",
             },
         )
-        yield s3_client
 
 
-@pytest.fixture(scope="function")
-def dc_wide_postcode_log_stream(sts, firehose):
-    with mock_s3():
-        s3_client: S3Client = boto3.client("s3")
-        s3_client.create_bucket(Bucket="firehose-test")
-        client = boto3.client("firehose", region_name="eu-west-2")
-        client.create_delivery_stream(
-            DeliveryStreamName=DCWidePostcodeLoggingClient.stream_name,
-            ExtendedS3DestinationConfiguration={
-                "BucketARN": "arn:aws:s3:::firehose-test",
-                "BufferingHints": {"IntervalInSeconds": 300, "SizeInMBs": 5},
-                "CompressionFormat": "UNCOMPRESSED",
-                "DataFormatConversionConfiguration": {"Enabled": False},
-                "EncryptionConfiguration": {
-                    "NoEncryptionConfig": "NoEncryption"
-                },
-                "Prefix": "AWSLogs/000000000000/route53querylogs/eu-west-2/",
-                "ProcessingConfiguration": {"Enabled": False, "Processors": []},
-                "RoleARN": "arn:aws:iam::000000000000:role/query-log-firehose-P8V0BH6695TQ7HD",
-                "S3BackupMode": "Disabled",
-            },
+@pytest.fixture(scope="session")
+def cdk(mock_aws_services):
+    """
+    Consumes a CloudFormation Template and creates mock resources based on it.
+
+    Not all of CloudFormation is supported, so some parts will need to be manually created.
+
+    """
+    ssm_client = boto3.client("ssm", region_name="eu-west-2")
+    s3_client = boto3.client("s3", region_name="eu-west-2")
+    with open(
+        Path(os.path.dirname(__file__)) / "test_stack_cfn" / "template.yaml"
+    ) as f:
+        template = f.read()
+    parsed = yaml.safe_load(template)
+    assets_bucket_name = None
+    lambda_zips = {}
+    for name, spec in parsed["Resources"].items():
+        spec["Properties"]["StageName"] = "test"
+        # Bug means tags don't work at the moment, remove them
+        spec["Properties"].pop("Tags", None)
+        if spec["Type"] == "AWS::Lambda::Function":
+            assets_bucket_name = (
+                assets_bucket_name or spec["Properties"]["Code"]["S3Bucket"]
+            )
+            lambda_zips[name] = spec["Properties"]["Code"]["S3Key"]
+
+    fixed_template = yaml.dump(parsed)
+
+    # fixing moto param parsing, fails with no variable found
+    ssm_client.put_parameter(
+        Name=parsed["Parameters"]["BootstrapVersion"]["Default"],
+        Value="1",
+        Type="String",
+    )
+
+    s3_client.create_bucket(
+        Bucket=assets_bucket_name,
+        CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
+    )
+    root_path = Path(__file__).parent.parent
+    # At the moment we only have a single Lambda so we can
+    # hard code the below. If we were to have more, we'd have to do something
+    # clever like inspecting the hashed CFN asset values and matching them
+    # to paths. Thankfully this is a problem for another day
+    for name, key in lambda_zips.items():
+        f = BytesIO()
+        z = zipfile.ZipFile(f, "w")
+        lambda_path = root_path / "dc_logging_aws/lambdas/ingest/handler.py"
+        with lambda_path.open() as lambda_file:
+            z.writestr(
+                "handler.py",
+                lambda_file.read(),
+            )
+        # It looks like layers aren't properly supported at the moment, so
+        # add the files manually. Again, this is simple while we only have a
+        # single function…
+        client_path = root_path / "dc_logging_client"
+        for path in client_path.glob("*.py"):
+            z.writestr(
+                str(path.name),
+                path.open().read(),
+            )
+        z.close()
+        s3_client.put_object(
+            Body=f.getvalue(), Bucket=assets_bucket_name, Key=key
         )
-        yield client
+        f.close()
+    cf_mock = boto3.client("cloudformation", region_name="eu-west-2")
+    cf_mock.create_stack(StackName="Test", TemplateBody=fixed_template)
+    # Add anything that we need in the tests here
+    test_data = {"ingest_functions": []}
+    for resource in cf_mock.describe_stack_resources(StackName="Test")[
+        "StackResources"
+    ]:
+        if resource["ResourceType"] == "AWS::Lambda::Function" and resource[
+            "PhysicalResourceId"
+        ].startswith("ingest-"):
+            test_data["ingest_functions"].append(resource["PhysicalResourceId"])
+            test_data["function_name"] = resource["PhysicalResourceId"]
+    yield test_data

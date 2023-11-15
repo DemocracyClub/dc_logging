@@ -4,13 +4,15 @@ import typing
 from datetime import datetime
 from typing import Type
 
-import aws_cdk.aws_glue as glue
+import aws_cdk.aws_glue_alpha as glue
 import aws_cdk.aws_iam as iam
-import aws_cdk.aws_kinesisfirehose as firehose
-import aws_cdk.aws_kinesisfirehose_destinations as firehose_destinations
+import aws_cdk.aws_kinesisfirehose_alpha as firehose
+import aws_cdk.aws_kinesisfirehose_destinations_alpha as firehose_destinations
+import aws_cdk.aws_lambda as aws_lambda
+import aws_cdk.aws_lambda_python_alpha as lambda_python
 import aws_cdk.aws_s3 as s3
 import boto3
-from aws_cdk.core import Duration, Stack
+from aws_cdk import Duration, Stack
 from constructs import Construct
 
 sys.path.append("..")
@@ -21,6 +23,9 @@ from dc_logging_client.log_client import BaseLoggingClient  # noqa
 class DCLogsStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
+        org_client = boto3.client("organizations", region_name=self.region)
+        self.org_id = org_client.describe_organization()["Organization"]["Id"]
+        self.dc_environment = self.node.try_get_context("dc-environment")
         self.create_iam_role()
         self.database = self.get_database()
         self.bucket = self.get_bucket()
@@ -83,6 +88,7 @@ class DCLogsStack(Stack):
         for cls in stream_class_list:
             tables.append(self.create_table_from_stream_class(cls))
             streams.append(self.create_stream(cls))
+            self.create_lambda_function(cls)
         return tables
 
     def _field_type_to_glue_type(self, field_type):
@@ -141,4 +147,61 @@ class DCLogsStack(Stack):
                 )
             ],
             delivery_stream_name=cls.stream_name,
+        )
+
+    def create_lambda_function(self, cls):
+        client_layer = lambda_python.PythonLayerVersion(
+            self,
+            "logging_client_layer",
+            compatible_runtimes=[aws_lambda.Runtime.PYTHON_3_10],
+            entry="./dc_logging_client",
+        )
+
+        stream_ingest_lambda = lambda_python.PythonFunction(
+            self,
+            f"ingest-{cls.stream_name}",
+            function_name=f"ingest-{cls.stream_name}-{self.dc_environment}",
+            entry="./dc_logging_aws/lambdas/ingest",
+            index="handler.py",
+            runtime=aws_lambda.Runtime.PYTHON_3_10,
+            timeout=Duration.minutes(2),
+            environment={
+                "STREAM_NAME": cls.stream_name,
+                "ENTRY_CLASS": cls.entry_class.__name__,
+            },
+            layers=[client_layer],
+        )
+
+        # TODO: Lambda doesn't currently support aws:PrincipalOrgPaths
+        # meaning we can't limit invocation to account paths (e.g only dev accounts).
+        # This isn't ideal as in theory a dev account could log to prod, or (worse)
+        # prod to dev. When Lambda supports aws:PrincipalOrgPaths we should change
+        # the principal to be:
+        # ```
+        # iam.PrincipalWithConditions(
+        #     iam.OrganizationPrincipal("[org id]"),
+        #     conditions={
+        #         "ForAnyValue:StringLike": {
+        #             "aws:PrincipalOrgPaths": [
+        #                 "[path]"
+        #             ]
+        #         },
+        #     },
+        # )
+        # ```
+
+        stream_ingest_lambda.add_permission(
+            f"cross-org-invoke-{cls.stream_name}",
+            principal=iam.OrganizationPrincipal(self.org_id),
+            action="lambda:InvokeFunction",
+        )
+
+        stream_ingest_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["firehose:PutRecord"],
+                resources=[
+                    f"arn:aws:firehose:*:*:deliverystream/{cls.stream_name}"
+                ],
+                effect=iam.Effect.ALLOW,
+            )
         )

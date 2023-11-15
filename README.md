@@ -11,10 +11,22 @@ The logging client provides four things:
 4. Validation that everything is being used properly
 
 ### Local Development
+
+Docker is required on the local system to run test.
+
 * Install Python dependencies: `pipenv install --dev`
 * Run the test suite: `pytest`
-* Run lint checks: `pytest --flakes`
-* Auto-format: `black .`
+* Run lint checks: `ruff .`
+* Auto-format: `ruff format`
+
+#### Testing
+
+We use `moto` to test the various AWS moving parts. `moto`
+builds (almost) everything from the CDK CloudFormation template. 
+
+If you make change to the Stack, or the first time you install the project, you 
+need to run `make cfn_template_for_tests`. This file isn't checked in to Git
+as it contains actual values from the deployment. 
 
 ### Installation
 
@@ -38,10 +50,11 @@ together.
 ##### DCWidePostcodeLoggingClient
 Currently, there is a single log stream defined: `DCWidePostcodeLoggingClient`.
 
-This is designed to log all postcodes entered from any DC site. Care should 
-be taken not to "double count" entered postcodes. For example, if an app is 
-processing a lookup from another project that also logs postcodes, make sure 
-that only one log entry is created per search.
+This is designed to log all postcodes entered from any DC site. 
+
+If the application in turn calls the developers.democracyclub.org.uk API then
+`calls_devs_dc_api` MUST be set to `True`. This will prevent double counting 
+usage when querying later.
 
 
 #### Create a logger
@@ -52,16 +65,19 @@ example in a Django settings module.
 ```python
 # settings.py
 from dc_logging_client.log_client import DCWidePostcodeLoggingClient
-POSTCODE_LOGGER = DCWidePostcodeLoggingClient
+POSTCODE_LOGGER = DCWidePostcodeLoggingClient(function_arn="arn")
 ```
+
+The ARN to pass in should be the correct one for the log stream (currently
+only DCWidePostcodeLoggingClient) and the environment (currently only
+development or production). That means at the moment there are only two
+possible ARNs here. Find them in the DC dev handbook.
 
 #### Create an entry
 
 At the point you want to create a log entry
 
 ```python
-from dc_logging_client.log_client import DCWidePostcodeLoggingClient
-POSTCODE_LOGGER = DCWidePostcodeLoggingClient()
 entry = POSTCODE_LOGGER.entry_class(
     postcode="SW1A 1AA", 
     dc_product=POSTCODE_LOGGER.dc_product.wcivf
@@ -82,79 +98,52 @@ POSTCODE_LOGGER.log(entry)
 
 ### AWS services
 
-Logs are submitted to [AWS Kenisis Firehose](https://aws.amazon.com/kinesis/data-firehose/).
+Logs are submitted initially to a Lambda ingest function and then to
+[AWS Kenisis Firehose](https://aws.amazon.com/kinesis/data-firehose/).
 
-Understanding Firehose fully shouldn't be required, but some high level 
-basics are useful:
+Understanding how Firehose works shouldn't be required, but some high 
+level basics are useful:
 
 Firehose provides _log streams_ that are essentially endpoints that accept data.
 
 Each stream can be configured to process the data in various way. For 
-example, by putting it in S3, calling a AWS Lambda function, adding to a 
-relational database, etc etc.
+example, by putting it in S3, calling a AWS Lambda ingest function, adding to a 
+relational database, etc.
 
 Firehose doesn't validate the incoming data, so it's important that clients 
-write constantly.
+write consistently.
 
-This library mainly attempts to manage this consistency. 
+This library mainly attempts to manage this consistency.
 
-### Authentication
-
-The logging client hands authentication over to AWS. AWS only allows logging 
-from an authenticated IAM user in its own account.
-
-This is unlike e.g RDS that has a host URL that anyone can connect to (if 
-permission is so given). Firehose just uses _log stream names_ in the 
-authenticated account.
-
-As DC uses an AWS account per (service, stage), we need to consider how we 
-authenticate against the stream we want to post to.
-
-The simplest and safest way, from the client users's point of is to use 
-AWS's _assume role_ via 
-[Security Token Service](https://docs.aws.amazon.com/STS/latest/APIReference/welcome.html).
-
-This is essentially a service that lets IAM users "assume" a different role, 
-including across accounts. Think of it a little like `su`.
-
-On the _sending_ side, the role the appliation is running under needs to have 
-a policy associated with it that allows assuming a role.
-
-On the _receiving_ side (the AWS account with the target Firehose log stream)
-there needs to be a policy that allows thr sending IAM policy to connect.
+The initial Lambda ingest function is needed for cross account support: Firehose
+doesn't support organisational wide permissions, meaning it's only possible to
+write to the account that hosts the log stream. To get around this, we have
+a Lambda ingest function per log stream (and environment) that _can_ be called
+cross-account, and this function relays the log message on to Firehose.
 
 
 ```mermaid
 graph TB
+    dc_logging_client["DCWidePostcodeLoggingClient()"]
+    put_log["DCWidePostcodeLoggingClient().log(entry)"]
+    lambda_ingest["Lambda Ingest function"]
+    
     subgraph application_account [" Application Account"]
-        direction LR
-        subgraph app_sts ["Assume Role"]
-                application_policy["PutDCWideLogs IAM Policy"]
-                application_role["Application / developer / CI role"]
-        end
-
         subgraph application ["Application"]
-            dc_logging_client
-            put_log
+            direction TB
+            dc_logging_client --> put_log
         end
-        application_policy --> application_role
-        application_role --> |Role ARN| dc_logging_client
-        dc_logging_client --> put_log
-        put_log --> monitoring_role
     end
 
     subgraph aws_monitoring ["AWS Monitoring Account"]
-        subgraph assume_role ["Monitoring account authentication"]
-            monitoring_role["dc-wide-put-record IAM Role"]
-            monitoring_policy["dc-wide-put-record IAM Policy"]
-        end
+        direction TB
+        application --Validate PrincipalOrgID--> lambda_ingest --> firehose
         firehose["Firehose DataStream"]
         convert["Convert to ORC"]
         s3["S3 log storage"]
         glue["AWS Glue table definition"]
         athena["AWS Athena (SQL query logs)"]
         
-        monitoring_role --> monitoring_policy --> firehose
         firehose --> convert --> s3
         s3 --> glue --> athena
     end
@@ -162,13 +151,10 @@ graph TB
 
 The end result of this is that the client needs two things:
 
-1. To be running in an environment that has permission to _assume role_ in 
-   to the target account
-2. The ARN of the role to assume
 
-For an EC2 instance or Lambda function this means attaching a policy to the 
-execution role already attached to the resource.
-
-For local development this means using `SSO` to authenticate. The SSO admin 
-will ensure that the policy is attached to your role.
-
+1. To have a PrincipalOrgID of the DC organisation. This means, is in an account in 
+   th DC org, or is an authenticated user in that organisation
+2. The function ARN of the ingest function. Take this from the DC dev 
+   handbook, and ensure it matches the environment you're deploying to 
+   (currently either `development` or `production`). DO NOT LOG TO THE WRONG 
+   PLACE
