@@ -81,6 +81,9 @@ jobs:
     - attach_workspace:
         at: ~/repo/
     - run: *install-pipenv
+    - python/install-packages:
+        pkg-manager: pipenv
+        args: --dev
     - node/install-packages
     - run:
         name: CDK Synth
