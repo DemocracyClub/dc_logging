@@ -112,7 +112,7 @@ workflows:
           filters: { branches: { only: [ main, master ] } }
       - deploy:
           name: cdk_deploy_production
-          dc-environment: development
+          dc-environment: production
           requires:
             - run-tests
             - cdk_deploy_development
