@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9c59288c3cb588f3bb3019f627c07b511c633ce20c83f2879a53a9530bbd1b21"
+            "sha256": "971d1fc339357b46255d0770827215c4ba3a31739977e474b673db1fc0a529c0"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -252,12 +252,12 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:3e90ea2faa3e9892b9140f857911f9ef0013192a106f50d0ec7b71e8d1afc90a",
-                "sha256:91c72fa4848eda9311c273db667946bd9d953285ae8d54b7bbad541b74adc254"
+                "sha256:6617ac176efb21485ebc3a058a3a97feb1300141421ae3d1809562c4cac1d5f9",
+                "sha256:f3024bba9ac980007ba7b5f28a9734d111fb5466e2426ac76c5edbd6dedd8db2"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.7'",
-            "version": "==1.29.0"
+            "version": "==1.29.2"
         },
         "boto3-stubs": {
             "extras": [
@@ -277,11 +277,11 @@
         },
         "botocore": {
             "hashes": [
-                "sha256:95fe3357b9ddc4559941dbea0f0a6b8fc043305f013b7ae2a85dff0c3b36ee92",
-                "sha256:9c1e143feb6a04235cec342d2acb31a0f44df3c89f309f839e03e38a75f3f44e"
+                "sha256:0e231524e9b72169fe0b8d9310f47072c245fb712778e0669f53f264f0e49536",
+                "sha256:a68a33193d8cd59e3b2142bff632e562afc02f9c4417e3dcc81a6e1b1f47148e"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==1.32.0"
+            "version": "==1.32.2"
         },
         "botocore-stubs": {
             "hashes": [
@@ -854,12 +854,12 @@
                 "sts"
             ],
             "hashes": [
-                "sha256:9b5a363f36f8c3fb36388764e7b8c01c615da2f2cba7da3e681680de14bfc769",
-                "sha256:e78b49ae8acee06a865e4963174bdf974dd66398fb3bb831a7428498506c0c56"
+                "sha256:24de81eeaa450a20b57c5cdf9a757ea5216bddc7db798e335d2de1f2376bf324",
+                "sha256:c85289d13d15d5274d0a643381af1f1b03d7ee88f0943c9d2d6c28e6177a298a"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.7'",
-            "version": "==4.2.8"
+            "version": "==4.2.9"
         },
         "mpmath": {
             "hashes": [
