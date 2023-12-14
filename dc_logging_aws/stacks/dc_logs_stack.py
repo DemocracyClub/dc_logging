@@ -141,6 +141,11 @@ class DCLogsStack(Stack):
                     "org.openx.data.jsonserde.JsonSerDe"
                 ),
             ),
+            storage_parameters=[
+                glue.StorageParameter.compression_type(
+                    glue.CompressionType.GZIP
+                )
+            ],
         )
 
         # Projection isn't supported directly by the CDK, so we have to set
@@ -178,7 +183,9 @@ class DCLogsStack(Stack):
             cls.stream_name,
             destinations=[
                 firehose_destinations.S3Bucket(
-                    self.bucket, data_output_prefix=f"{cls.stream_name}/"
+                    self.bucket,
+                    data_output_prefix=f"{cls.stream_name}/",
+                    compression=firehose_destinations.Compression.GZIP,
                 )
             ],
             delivery_stream_name=cls.stream_name,
