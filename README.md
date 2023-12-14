@@ -158,3 +158,17 @@ The end result of this is that the client needs two things:
    handbook, and ensure it matches the environment you're deploying to 
    (currently either `development` or `production`). DO NOT LOG TO THE WRONG 
    PLACE
+
+#### Deploying AWS Services
+
+The AWS services are deployed using the CDK. The CDK is a framework for
+defining AWS infrastructure as code. It's written in Python, and the code
+is in the `dc_logging_aws` directory.
+
+Deployment is done automatically by CircleCI. To deploy manually, you need
+to install the CDK and run `cdk deploy` in the root of this repo, with these two
+environment variables set for development (production deploys should be handled
+by CircleCI):
+
+- `DC_ENVIRONMENT`: `development`
+- `LOGS_BUCKET_NAME`: Run `aws s3 ls` to find this, it likely ends with `logging`.

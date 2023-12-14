@@ -116,14 +116,20 @@ class DCLogsStack(Stack):
             )
             columns.append(column)
 
-        return glue.Table(
+        table_name = f"{cls.stream_name.replace('-', '_')}_table"
+
+        table = glue.Table(
             self,
-            id=f"{cls.stream_name}-table",
+            id=table_name,
             database=self.database,
-            table_name=f"{cls.stream_name}-table",
+            table_name=table_name,
             columns=columns,
             bucket=self.bucket,
             s3_prefix=cls.stream_name,
+            partition_keys=[
+                glue.Column(name="day", type=glue.Schema.STRING),
+                glue.Column(name="hour", type=glue.Schema.INTEGER),
+            ],
             data_format=glue.DataFormat(
                 input_format=glue.InputFormat(
                     "org.apache.hadoop.mapred.TextInputFormat"
@@ -136,6 +142,35 @@ class DCLogsStack(Stack):
                 ),
             ),
         )
+
+        # Projection isn't supported directly by the CDK, so we have to set
+        # overrides of the CloudFormation template. We also need to escape the
+        # dots in the keys, as otherwise the CDK will try to interpret them as
+        # nested properties.
+        cfn_table = table.node.default_child
+        overrides = [
+            ("projection.enabled", "true"),
+            ("projection.day.type", "date"),
+            ("projection.day.format", "yyyy/MM/dd"),
+            ("projection.day.range", "2022/02/01,NOW"),
+            ("projection.day.interval", "1"),
+            ("projection.day.interval.unit", "DAYS"),
+            ("projection.hour.type", "integer"),
+            ("projection.hour.range", "0,23"),
+            ("projection.hour.digits", "2"),
+            (
+                "storage.location.template",
+                f"s3://{self.bucket.bucket_name}/{cls.stream_name}/${{day}}/${{hour}}",
+            ),
+            ("projection.enabled", "true"),
+        ]
+        for key, value in overrides:
+            key = key.replace(".", "\.")
+            cfn_table.add_override(
+                f"Properties.TableInput.Parameters.{key}", value
+            )
+
+        return table
 
     def create_stream(self, cls):
         firehose.DeliveryStream(
