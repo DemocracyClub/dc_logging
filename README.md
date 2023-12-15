@@ -172,3 +172,52 @@ by CircleCI):
 
 - `DC_ENVIRONMENT`: `development`
 - `LOGS_BUCKET_NAME`: Run `aws s3 ls` to find this, it likely ends with `logging`.
+
+### Querying Athena
+
+The logs are stored in S3 in a format that can be queried using Athena. The logs
+are partitioned by day and hour, so in order to query them efficiently you need 
+to also specify ranges to filter by. The day is a string in the format 
+`YYYY/MM/DD` and the hour is an int. You can use `>`, `<`, `>=`, `<=` etc, and 
+also `LIKE` to match a string prefix for the day.
+
+The partitions are based on when the log was sent to S3 by Firehose, not when
+the log entry was created. This means that timestamps can be off versus the 
+partitions by up to 5 minutes. For precise analysis, you should check the 
+`timestamp` field in the log entry.
+
+#### Examples
+
+```sql
+-- All of May and June 2023
+SELECT dc_product, count(*) FROM "dc-wide-logs"."dc_postcode_searches_table"
+WHERE day >= '2023/05' AND day < '2023/07'
+GROUP BY 1
+```
+
+```sql
+-- All of May 3rd 2023, using the timestamp field for precision
+SELECT dc_product, count(*) FROM "dc-wide-logs"."dc_postcode_searches_table"
+WHERE day IN('2023/05/03', '2023/05/04')
+AND timestamp >= cast('2023-05-03' AS timestamp)
+AND timestamp < cast('2023-05-04' AS timestamp)
+GROUP BY 1
+```
+
+```sql
+-- All of 2023
+SELECT dc_product, count(*) FROM "dc-wide-logs"."dc_postcode_searches_table"
+WHERE day LIKE '2023/%'
+```
+
+```sql
+-- Joining on the local_authorities table
+SELECT substr(nuts, 1, 1), count(*) 
+FROM "dc-wide-logs"."dc_postcode_searches_table" 
+JOIN (select distinct pcds, nuts FROM "local_authorities"."local_authorities") AS las
+ON replace("postcode", ' ', '') = replace("las"."pcds", ' ', '')
+WHERE "timestamp" >= cast('2023-04-01' AS timestamp)
+AND "timestamp" <= cast('2023-05-04 22:00' AS timestamp)
+AND day >= '2023/03/31' AND day <= '2023/05/05'
+GROUP BY substr(nuts, 1, 1)
+```
