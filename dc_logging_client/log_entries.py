@@ -29,7 +29,17 @@ class BaseLogEntry(abc.ABC):
         newline_char = ""
         if newline:
             newline_char = "\n"
-        json_data = json.dumps(self.__dict__, sort_keys=True, default=str)
+
+        data = self.__dict__
+        for k, v in data.items():
+            if isinstance(v, datetime.datetime):
+                # Athena uses Java's SimpleDateFormat, which doesn't support
+                # microseconds. We therefore need to remove the last 3 digits
+                #
+                # https://docs.aws.amazon.com/athena/latest/ug/data-types.html#data-types-timestamps
+                data[k] = v.strftime("%Y-%m-%d %H:%M:%S.%f")[0:-3]
+
+        json_data = json.dumps(data, sort_keys=True, default=str)
         return f"{json_data}{newline_char}"
 
 
@@ -58,13 +68,18 @@ class UTMMixin:
 @dataclass
 class PostcodeLogEntry(BaseLogEntry, UTMMixin, ValidDCProductMixin):
     postcode: str = field(default_factory=str)
-    timestamp: Union[datetime.datetime, str] = ""
+    timestamp: datetime.datetime = field(default_factory=datetime.datetime.now)
     api_key: str = ""
     calls_devs_dc_api: bool = False
 
     def __post_init__(self):
         super().__post_init__()
+
         if not self.postcode:
             raise ValueError("Postcode required")
         if not self.timestamp:
             self.timestamp = datetime.datetime.now()
+
+        # Handle deprecated functionality of passing in a string timestamp
+        if isinstance(self.timestamp, str):
+            self.timestamp = datetime.datetime.fromisoformat(self.timestamp)
