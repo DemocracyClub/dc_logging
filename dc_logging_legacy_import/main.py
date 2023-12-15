@@ -20,6 +20,12 @@ class Options:
     dc_product: str
 
 
+PRODUCT_TABLES = {
+    "WCIVF": "core_loggedpostcode",
+    "WDIV": "data_finder_loggedpostcode",
+}
+
+
 def hourly_batches(
     cur: psycopg.cursor
 ) -> Iterator[Tuple[Tuple[int], List[PostcodeLogEntry]]]:
@@ -69,9 +75,9 @@ def main():
         min, max = (None, None)
         # Get max and min for progress
         with conn.execute(
-            """
+            f"""
                 SELECT MIN(created), MAX(created)
-                FROM core_loggedpostcode
+                FROM {PRODUCT_TABLES[OPTIONS.dc_product]}
                 WHERE created >= %s AND created <= %s
             """,
             (OPTIONS.start, OPTIONS.end),
@@ -83,16 +89,18 @@ def main():
             total_partitions = (round_max - round_min).total_seconds() / 3600
 
         print("⬇️  Fetching data from postgres")
-        with conn.cursor() as cur:
+        with conn.cursor(
+            f"{OPTIONS.dc_product}-{datetime.datetime.now()}"
+        ) as cur:
             cur.execute(
-                """
+                f"""
                     SELECT
                         created as timestamp,
                         postcode,
                         utm_source,
                         utm_medium,
                         utm_campaign
-                    FROM core_loggedpostcode
+                    FROM {PRODUCT_TABLES[OPTIONS.dc_product]}
                     WHERE created >= %s AND created <= %s
                     ORDER BY created ASC
                 """,
