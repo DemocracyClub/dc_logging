@@ -37,3 +37,30 @@ and uploads them to S3.
    ```
    The script will fetch all logs from the database first before starting the 
    upload to S3, so it may take a while to start.
+
+## Running from AWS CloudShell
+
+For databases like WDIV, the quantity of logs is too large to fetch and upload
+from a local machine. Instead, we can run the script from AWS CloudShell, which
+has better connectivity to the database and S3.
+
+1. Open the [AWS CloudShell](https://eu-west-2.console.aws.amazon.com/cloudshell/home?region=eu-west-2#)
+2. Clone this repo:
+   ```bash
+   git clone https://github.com/DemocracyClub/dc_logging.git
+   ```
+3. Install Python 3.11:
+   ```bash
+   sudo dnf install -y python3.11 python3.11-pip
+   ```
+4. Install pipenv:
+   ```bash
+   pip3.11 install --user pipenv
+   ```
+5. Install dependencies:
+   ```bash
+   cd dc_logging
+   pipenv install --dev --python /usr/bin/python3.11
+   ```
+6. Follow the instructions above to get a shell with an AWS session and the
+   database credentials, then run the script.
