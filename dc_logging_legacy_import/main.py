@@ -58,7 +58,7 @@ def serialize_to_file(batch: List[PostcodeLogEntry]) -> (str, str):
 
     # hash the data
     hash = hashlib.sha256(data.encode("utf-8")).hexdigest()
-    return (f"{date}/{hash}", data)
+    return (f"{date}/{OPTIONS.dc_product}-{hash}", data)
 
 
 def upload_file(key, data):
