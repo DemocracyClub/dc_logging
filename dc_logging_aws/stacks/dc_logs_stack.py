@@ -157,7 +157,7 @@ class DCLogsStack(Stack):
             ("projection.enabled", "true"),
             ("projection.day.type", "date"),
             ("projection.day.format", "yyyy/MM/dd"),
-            ("projection.day.range", "2022/02/01,NOW"),
+            ("projection.day.range", "2017/05/01,NOW"),
             ("projection.day.interval", "1"),
             ("projection.day.interval.unit", "DAYS"),
             ("projection.hour.type", "integer"),
