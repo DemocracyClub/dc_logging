@@ -27,7 +27,7 @@ PRODUCT_TABLES = {
 
 
 def hourly_batches(
-    cur: psycopg.cursor
+    cur: psycopg.cursor,
 ) -> Iterator[Tuple[Tuple[int], List[PostcodeLogEntry]]]:
     dayhour = (0, 0, 0, 0)
     batch: List[PostcodeLogEntry] = []
