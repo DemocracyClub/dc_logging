@@ -1,7 +1,6 @@
 import argparse
 import datetime
 import gzip
-import hashlib
 from typing import Iterator, List, Tuple
 
 import boto3
@@ -56,9 +55,7 @@ def serialize_to_file(batch: List[PostcodeLogEntry]) -> (str, str):
             date = entry.timestamp.strftime("%Y/%m/%d/%H")
         data += entry.as_log_line()
 
-    # hash the data
-    hash = hashlib.sha256(data.encode("utf-8")).hexdigest()
-    return (f"{date}/{OPTIONS.dc_product}-{hash}", data)
+    return (f"{date}/{OPTIONS.dc_product}", data)
 
 
 def upload_file(key, data):
