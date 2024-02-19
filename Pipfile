@@ -25,7 +25,7 @@ ipdb = "*"
 pytest = "7.2.2"
 pytest-ruff = "*"
 pytest-cov = "*"
-moto = {extras = ["firehose", "sts", "awslambda", "apigateway", "proxy"], version = "4.2.8"}
+moto = {extras = ["firehose", "sts", "awslambda", "apigateway", "proxy"], version = "5.0.2"}
 boto3-stubs = {extras = ["firehose", "s3", "sts", "organizations", "lambda"], version = "1.28.80"}
 psycopg = {extras = ["binary"], version = "*"}
 tqdm = "*"
