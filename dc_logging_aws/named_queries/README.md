@@ -1,0 +1,20 @@
+### Make report Queries
+
+You'll probably need to update some table names, but this is the gist of it:
+
+Make the files:
+
+eg 
+
+```shell
+python dc_logging_aws/named_queries/commands/create_election_query_files.py 2024-05-02 2024-04-01
+```
+
+or 
+
+```shell
+python dc_logging_aws/named_queries/commands/create_election_query_files.py 2024-07-04 2024-05-22 
+```
+
+Check them
+
