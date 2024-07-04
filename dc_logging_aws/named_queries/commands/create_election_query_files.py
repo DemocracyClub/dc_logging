@@ -41,7 +41,7 @@ class QueryFileCreator:
     def create_query_files(self):
         directory = self.create_query_directory()
 
-        files_to_create = {
+        count_files = {
             "election-week-count.sql": self.query_template.postcode_search_count(
                 self.query_template.start_of_polling_week
             ),
@@ -55,6 +55,9 @@ class QueryFileCreator:
                     self.start_of_election_period, time(0, 0)
                 ).replace(tzinfo=self.query_template.close_of_polls.tzinfo)
             ),
+        }
+
+        by_product_files = {
             "election-week-postcode-searches-by-product.sql": self.query_template.postcode_searches_by_product(
                 self.query_template.start_of_polling_week
             ),
@@ -68,6 +71,9 @@ class QueryFileCreator:
                     self.start_of_election_period, time(0, 0)
                 ).replace(tzinfo=self.query_template.close_of_polls.tzinfo)
             ),
+        }
+
+        by_local_authority = {
             "election-week-postcode-searches-by-local-authority.sql": self.query_template.postcode_searches_by_local_authority(
                 self.query_template.start_of_polling_week
             ),
@@ -81,6 +87,9 @@ class QueryFileCreator:
                     self.start_of_election_period, time(0, 0)
                 ).replace(tzinfo=self.query_template.close_of_polls.tzinfo)
             ),
+        }
+
+        by_constituency = {
             "election-week-postcode-searches-by-constituency.sql": self.query_template.postcode_searches_by_constituency(
                 self.query_template.start_of_polling_week
             ),
@@ -94,6 +103,30 @@ class QueryFileCreator:
                     self.start_of_election_period, time(0, 0)
                 ).replace(tzinfo=self.query_template.close_of_polls.tzinfo)
             ),
+        }
+
+        by_product_timeseries = {
+            "election-week-timeseries-by-product.sql": self.query_template.postcode_timeseries_by_product(
+                self.query_template.start_of_polling_week
+            ),
+            "election-day-timeseries-by-product.sql": self.query_template.postcode_timeseries_by_product(
+                datetime.combine(self.polling_day, time(0, 0)).replace(
+                    tzinfo=self.query_template.close_of_polls.tzinfo
+                ),
+            ),
+            "election-period-timeseries-by-product.sql": self.query_template.postcode_timeseries_by_product(
+                datetime.combine(
+                    self.start_of_election_period, time(0, 0)
+                ).replace(tzinfo=self.query_template.close_of_polls.tzinfo),
+            ),
+        }
+
+        files_to_create = {
+            **count_files,
+            **by_product_files,
+            **by_local_authority,
+            **by_constituency,
+            **by_product_timeseries,
         }
 
         for filename, content in files_to_create.items():

@@ -52,6 +52,7 @@ def run_election_queries(election_date, profile):
         / "local_authority_searches",
         "postcode-searches-by-constituency": results_dir
         / "constituency_searches",
+        "timeseries-by-product": results_dir / "time_series_by_product",
     }
 
     named_queries = athena_client.list_named_queries()

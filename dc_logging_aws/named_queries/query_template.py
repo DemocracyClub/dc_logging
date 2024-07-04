@@ -86,10 +86,17 @@ class QueryTemplate:
             cte = cte + """\n    AND LOWER("calls_devs_dc_api") = 'false'"""
         return cte
 
-    def logs_cte(self, start_time, from_source="ELECTION_PERIOD"):
+    def logs_cte(
+        self, start_time, from_source="ELECTION_PERIOD", timeseries=False
+    ):
+        extra_select = ""
+        if timeseries:
+            extra_select = (
+                ", date_format(timestamp, '%Y-%m-%d %H') as hour_segment"
+            )
         return textwrap.dedent(
             f"""
-            SELECT *
+            SELECT *{extra_select}
             FROM {from_source}
             WHERE (
                 "timestamp" >= cast('{utc_athena_time(start_time)}' AS timestamp)
@@ -122,27 +129,32 @@ class QueryTemplate:
             """
         ).strip()
 
-    def product_count_cte(self, logs_cte_name="LOGS"):
+    def product_count_cte(self, logs_cte_name="LOGS", timeseries=False):
+        extra_select = ""
+        extra_group_by = ""
+        if timeseries:
+            extra_select = ", hour_segment"
+            extra_group_by = ", hour_segment"
         return textwrap.dedent(
             f"""
             SELECT
-                count(*) AS count, "dc_product", '' AS key_name, '' AS user_name, '' AS email, utm_source
+                count(*) AS count, "dc_product", '' AS key_name, '' AS user_name, '' AS email, utm_source{extra_select}
                 FROM {logs_cte_name}
                 WHERE dc_product = 'WDIV'
-                GROUP BY "dc_product", "api_key", "utm_source"
+                GROUP BY "dc_product", "api_key", "utm_source"{extra_group_by}
             UNION SELECT
-                count(*) AS count, "dc_product", '' AS key_name, '' AS user_name, '' AS email, utm_source
+                count(*) AS count, "dc_product", '' AS key_name, '' AS user_name, '' AS email, utm_source{extra_select}
                 FROM {logs_cte_name}
                 WHERE dc_product = 'WCIVF'
-                GROUP BY "dc_product", "api_key", "utm_source"
+                GROUP BY "dc_product", "api_key", "utm_source"{extra_group_by}
             UNION SELECT
-                count(*) AS count, "dc_product", api_users."key_name", api_users."user_name", api_users."email", utm_source
+                count(*) AS count, "dc_product", api_users."key_name", api_users."user_name", api_users."email", utm_source{extra_select}
                 FROM {logs_cte_name}
                     JOIN "dc-wide-logs"."api-users-ec-api" as api_users ON {logs_cte_name}."api_key" = api_users."key"
                 WHERE dc_product = 'EC_API'
-                GROUP BY "dc_product", "key_name", "user_name", "utm_source", "email"
+                GROUP BY "dc_product", "key_name", "user_name", "utm_source", "email"{extra_group_by}
             UNION SELECT
-                count(*) AS count, "dc_product", api_users."key_name", api_users."user_name", api_users."email", utm_source
+                count(*) AS count, "dc_product", api_users."key_name", api_users."user_name", api_users."email", utm_source{extra_select}
                 FROM {logs_cte_name}
                     JOIN "dc-wide-logs"."api-users-aggregator-api" as api_users ON {logs_cte_name}."api_key" = api_users."key"
                 WHERE
@@ -150,7 +162,7 @@ class QueryTemplate:
                     AND api_users."key_name" NOT IN (
                         'EC postcode pages - Dev', 'WhoCanIVoteFor', 'Updown', 'EC API'
                     )
-                GROUP BY "dc_product", "key_name", "user_name", "utm_source", "email"
+                GROUP BY "dc_product", "key_name", "user_name", "utm_source", "email"{extra_group_by}
             """
         ).strip()
 
@@ -178,6 +190,33 @@ class QueryTemplate:
             FROM
                 PRODUCT_COUNTS
             ORDER BY count DESC;
+            """
+        ).strip()
+
+    def postcode_timeseries_by_product(self, start_time):
+        election_period_cte = indent_cte_string(
+            self.election_period_cte(exclude_calls_devs_dc_api=False), 12
+        )
+
+        logs_indent_cte_string = indent_cte_string(
+            self.logs_cte(start_time, timeseries=True), 12
+        )
+        product_indent_cte_string = indent_cte_string(
+            self.product_count_cte(timeseries=True), 12
+        )
+        return textwrap.dedent(
+            f"""
+            WITH ELECTION_PERIOD AS (
+            {textwrap.indent(election_period_cte, '    ')}
+            ), LOGS AS (
+            {textwrap.indent(logs_indent_cte_string, '    ')}
+            ), PRODUCT_COUNTS AS (
+            {textwrap.indent(product_indent_cte_string, '    ')}
+            )
+            SELECT hour_segment, count, dc_product, key_name, email, utm_source
+            FROM
+                PRODUCT_COUNTS
+            ORDER BY hour_segment, dc_product,key_name, email, utm_source;
             """
         ).strip()
 
