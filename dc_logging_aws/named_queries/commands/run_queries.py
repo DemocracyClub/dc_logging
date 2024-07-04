@@ -26,15 +26,42 @@ def wait_for_query_to_complete(client, query_execution_id):
 
 
 def save_query_results(client, query_execution_id, output_location):
-    result = client.get_query_results(QueryExecutionId=query_execution_id)
-    rows = result["ResultSet"]["Rows"]
-    csv_rows = [
-        [col.get("VarCharValue", "") for col in row["Data"]] for row in rows
-    ]
     output_location.parent.mkdir(parents=True, exist_ok=True)
     with open(output_location, "w", newline="") as out_file:
+        page_number = 1
+        print(f"Fetching page {page_number} of results for {output_location.name}")
         csv_writer = csv.writer(out_file, delimiter="\t")
-        csv_writer.writerows(csv_rows)
+
+        # Get the first page of results
+        response = client.get_query_results(QueryExecutionId=query_execution_id)
+
+        # Write the header
+        header = [
+            col["Label"]
+            for col in response["ResultSet"]["ResultSetMetadata"]["ColumnInfo"]
+        ]
+        csv_writer.writerow(header)
+
+        # Write the data from the first page
+        for row in response["ResultSet"]["Rows"][1:]:  # Skip the header row
+            csv_writer.writerow(
+                [col.get("VarCharValue", "") for col in row["Data"]]
+            )
+
+        # Continue fetching and writing data while there's a NextToken
+        while "NextToken" in response:
+            page_number += 1
+            print(f"Fetching page {page_number} of results for {output_location.name}")
+            response = client.get_query_results(
+                QueryExecutionId=query_execution_id,
+                NextToken=response["NextToken"],
+            )
+            for row in response["ResultSet"]["Rows"]:
+                csv_writer.writerow(
+                    [col.get("VarCharValue", "") for col in row["Data"]]
+                )
+
+    print(f"Results saved to: {output_location}")
 
 
 def run_election_queries(election_date, profile):
@@ -96,7 +123,6 @@ def run_election_queries(election_date, profile):
                     save_query_results(
                         athena_client, query_execution_id, output_file
                     )
-                    print(f"Results saved to: {output_file}")
                     query_success_count += 1
                     break
         else:
