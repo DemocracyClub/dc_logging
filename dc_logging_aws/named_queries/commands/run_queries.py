@@ -29,7 +29,9 @@ def save_query_results(client, query_execution_id, output_location):
     output_location.parent.mkdir(parents=True, exist_ok=True)
     with open(output_location, "w", newline="") as out_file:
         page_number = 1
-        print(f"Fetching page {page_number} of results for {output_location.name}")
+        print(
+            f"Fetching page {page_number} of results for {output_location.name}"
+        )
         csv_writer = csv.writer(out_file, delimiter="\t")
 
         # Get the first page of results
@@ -51,7 +53,9 @@ def save_query_results(client, query_execution_id, output_location):
         # Continue fetching and writing data while there's a NextToken
         while "NextToken" in response:
             page_number += 1
-            print(f"Fetching page {page_number} of results for {output_location.name}")
+            print(
+                f"Fetching page {page_number} of results for {output_location.name}"
+            )
             response = client.get_query_results(
                 QueryExecutionId=query_execution_id,
                 NextToken=response["NextToken"],
