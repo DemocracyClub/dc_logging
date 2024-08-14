@@ -3,10 +3,6 @@ import logging
 import os
 
 import boto3
-from typing_extensions import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    pass
 
 from .log_entries import (
     BaseLogEntry,
