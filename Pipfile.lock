@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2521fed5fbba581f4d57b095dec37b676e17a98ebfaff6c98faa6dfbe9c5e2a3"
+            "sha256": "d2f4dbf582fcb35afa97cea2f029be3e0b02268a05c1c28ae6829937555589ce"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -94,7 +94,8 @@
                 "sha256:f9f17d2aec496a9aa6b76f53e3b614c965223c061982d434d160f930c698a9db"
             ],
             "index": "pypi",
-            "version": "==v5.2.0"
+            "markers": "python_version ~= '3.7'",
+            "version": "==5.2.0"
         },
         "cattrs": {
             "hashes": [
@@ -113,8 +114,7 @@
             "version": "==10.3.0"
         },
         "dc-logging-utils": {
-            "path": ".",
-            "version": "==1.0.2"
+            "file": "."
         },
         "exceptiongroup": {
             "hashes": [

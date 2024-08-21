@@ -13,8 +13,8 @@ name = "pypi"
 "constructs" = ">=10.0.0"
 cachetools = "==v5.2.0"
 wheel = "==0.38.4"
-dc-logging-utils = {path = "."}
 urllib3 = "==1.26.19"
+dc-logging-utils = {file = "."}
 
 [dev-packages]
 boto3 = ">=1.20,<1.30"
