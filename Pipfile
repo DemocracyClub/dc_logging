@@ -35,6 +35,6 @@ tqdm = "*"
 python_version = "3.12"
 
 [scripts]
-ruff-check = "ruff ."
+ruff-check = "ruff check ."
 ruff-format-check = "ruff format --check ."
 pytest = "pytest --ruff --junitxml=test-results/junit.xml --cov=dc_logging_client"
