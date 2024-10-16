@@ -23,6 +23,7 @@ jobs:
           pkg-manager: pipenv
           args: --dev
       - run: pipenv run pipenv check # before save_cache so an insecure cache is never saved
+      - run: pipenv run pipenv verify
       - save_cache:
           when: on_success
           paths:
