@@ -15,6 +15,7 @@ cachetools = "==v5.2.0"
 wheel = "==0.38.4"
 urllib3 = "==1.26.19"
 dc-logging-utils = {file = "."}
+attrs = "==23.1.0"
 
 [dev-packages]
 boto3 = ">=1.20,<1.30"
@@ -31,7 +32,7 @@ psycopg = {extras = ["binary"], version = "*"}
 tqdm = "*"
 
 [requires]
-python_version = "3.10"
+python_version = "3.12"
 
 [scripts]
 ruff-check = "ruff ."
