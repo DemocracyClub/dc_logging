@@ -67,6 +67,10 @@ class BaseLoggingClient(abc.ABC):
                 logger.warning(
                     f"Failed to log `{data.as_log_line()}`. Got `{response}`"
                 )
+            if response.get("FunctionError"):
+                logger.warning(
+                    f"Failed to log `{data.as_log_line()}`. Got `{response["Payload"].read().decode('utf-8')}`"
+                )
 
 
 class DCWidePostcodeLoggingClient(BaseLoggingClient):
