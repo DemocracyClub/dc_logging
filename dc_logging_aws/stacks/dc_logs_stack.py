@@ -195,7 +195,7 @@ class DCLogsStack(Stack):
         client_layer = lambda_python.PythonLayerVersion(
             self,
             "logging_client_layer",
-            compatible_runtimes=[aws_lambda.Runtime.PYTHON_3_10],
+            compatible_runtimes=[aws_lambda.Runtime.PYTHON_3_12],
             entry="./dc_logging_client",
         )
 
@@ -205,7 +205,7 @@ class DCLogsStack(Stack):
             function_name=f"ingest-{cls.stream_name}-{self.dc_environment}",
             entry="./dc_logging_aws/lambdas/ingest",
             index="handler.py",
-            runtime=aws_lambda.Runtime.PYTHON_3_10,
+            runtime=aws_lambda.Runtime.PYTHON_3_12,
             timeout=Duration.minutes(2),
             environment={
                 "STREAM_NAME": cls.stream_name,
