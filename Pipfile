@@ -29,7 +29,7 @@ pytest-cov = "*"
 boto3-stubs = {extras = ["firehose", "s3", "sts", "organizations", "lambda"], version = "1.28.80"}
 psycopg = {extras = ["binary"], version = "*"}
 tqdm = "*"
-moto = {extras = ["firehose", "sts", "awslambda", "proxy", "apigateway"], version = "==5.0.17"}
+moto = {extras = ["apigateway", "firehose", "awslambda", "proxy", "sts"], version = "==5.0.19.dev7"}
 
 [requires]
 python_version = "3.12"
@@ -37,4 +37,4 @@ python_version = "3.12"
 [scripts]
 ruff-check = "ruff check ."
 ruff-format-check = "ruff format --check ."
-pytest = "pytest --ruff --junitxml=test-results/junit.xml --cov=dc_logging_client"
+pytest = "sh -c \"MOTO_DOCKER_LAMBDA_IMAGE=shogo82148/lambda-python:3.12.2024.10.18 pytest --ruff --junitxml=test-results/junit.xml --cov=dc_logging_client\""
