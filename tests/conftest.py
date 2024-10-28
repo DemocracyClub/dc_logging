@@ -9,13 +9,7 @@ from pathlib import Path
 import boto3
 import pytest
 import yaml
-from moto import (
-    mock_cloudformation,
-    mock_firehose,
-    mock_lambda,
-    mock_s3,
-    mock_ssm,
-)
+from moto import mock_aws
 from mypy_boto3_firehose import FirehoseClient
 from mypy_boto3_s3 import S3Client
 
@@ -52,7 +46,7 @@ def aws_credentials(moto_proxy_start):
 
 @pytest.fixture(scope="session")
 def mock_aws_services(aws_credentials):
-    with mock_ssm(), mock_s3(), mock_lambda(), mock_cloudformation(), mock_firehose():
+    with mock_aws():
         yield
 
 

@@ -12,7 +12,7 @@ orbs:
 jobs:
   install_and_update_dependencies:
     machine:
-      image: ubuntu-2204:2023.10.1
+      image: ubuntu-2404:2024.05.1
     steps:
       - checkout
       - restore_cache:
@@ -23,6 +23,7 @@ jobs:
           pkg-manager: pipenv
           args: --dev
       - run: pipenv run pipenv check # before save_cache so an insecure cache is never saved
+      - run: pipenv run pipenv verify
       - save_cache:
           when: on_success
           paths:
@@ -31,7 +32,7 @@ jobs:
 
   run-tests:
     machine:
-      image: ubuntu-2204:2023.10.1
+      image: ubuntu-2404:2024.05.1
     steps:
       - checkout
       - attach_workspace:
@@ -69,7 +70,7 @@ jobs:
 
   deploy:
     machine:
-      image: ubuntu-2204:2022.10.2
+      image: ubuntu-2404:2024.05.1
     parameters:
       dc-environment:
         type: enum
