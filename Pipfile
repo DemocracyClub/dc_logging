@@ -29,7 +29,7 @@ pytest-cov = "*"
 boto3-stubs = {extras = ["firehose", "s3", "sts", "organizations", "lambda"], version = "1.28.80"}
 psycopg = {extras = ["binary"], version = "*"}
 tqdm = "*"
-moto = {extras = ["apigateway", "firehose", "awslambda", "proxy", "sts"], version = "==5.0.19.dev7"}
+moto = {extras = ["firehose", "awslambda", "apigateway", "proxy", "sts"], version = "==5.0.19"}
 
 [requires]
 python_version = "3.12"
