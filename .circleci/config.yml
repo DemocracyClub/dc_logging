@@ -17,18 +17,16 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v3-machine-dependencies-{{ checksum "Pipfile.lock" }}
+            - v5-machine-dependencies-{{ checksum "Pipfile.lock" }}
       - run: &install-pipenv pip3 install -U pipenv pip --quiet --no-input
-      - python/install-packages:
-          pkg-manager: pipenv
-          args: --dev
+      - run: pipenv sync --dev
       - run: pipenv run pipenv check # before save_cache so an insecure cache is never saved
       - run: pipenv run pipenv verify
       - save_cache:
           when: on_success
           paths:
             - ~/.local/share/virtualenvs/
-          key: v3-machine-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v5-machine-dependencies-{{ checksum "Pipfile.lock" }}
 
   run-tests:
     machine:
@@ -39,12 +37,10 @@ jobs:
           at: ~/repo/
       - restore_cache:
           keys:
-            - v3-machine-dependencies-{{ checksum "Pipfile.lock" }}
+            - v5-machine-dependencies-{{ checksum "Pipfile.lock" }}
             - v1-test_stack_cfn
       - run: *install-pipenv
-      - python/install-packages:
-          pkg-manager: pipenv
-          args: --dev
+      - run: pipenv sync --dev
       - node/install-packages
       - run:
           name: Check formatting (ruff format)
@@ -82,9 +78,7 @@ jobs:
     - attach_workspace:
         at: ~/repo/
     - run: *install-pipenv
-    - python/install-packages:
-        pkg-manager: pipenv
-        args: --dev
+    - run: pipenv sync --dev
     - node/install-packages
     - run:
         name: CDK Synth
