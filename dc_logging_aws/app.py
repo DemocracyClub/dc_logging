@@ -2,6 +2,7 @@
 import os
 
 from aws_cdk import App, Environment, Tags
+from stacks.base_reporting_stack import BaseReportingStack
 from stacks.dc_logs_stack import DCLogsStack
 
 valid_environments = (
@@ -26,6 +27,14 @@ assert (
 DCLogsStack(
     app,
     "DCLogsStack",
+    env=Environment(
+        account=os.getenv("CDK_DEFAULT_ACCOUNT"), region="eu-west-2"
+    ),
+)
+
+BaseReportingStack(
+    app,
+    "BaseReportingStack",
     env=Environment(
         account=os.getenv("CDK_DEFAULT_ACCOUNT"), region="eu-west-2"
     ),
