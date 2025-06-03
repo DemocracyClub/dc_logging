@@ -4,6 +4,7 @@ import os
 from aws_cdk import App, Environment, Tags
 from stacks.base_reporting_stack import BaseReportingStack
 from stacks.dc_logs_stack import DCLogsStack
+from stacks.postcode_searches_stack import PostcodeSearchesStack
 
 valid_environments = (
     "development",
@@ -35,6 +36,14 @@ DCLogsStack(
 BaseReportingStack(
     app,
     "BaseReportingStack",
+    env=Environment(
+        account=os.getenv("CDK_DEFAULT_ACCOUNT"), region="eu-west-2"
+    ),
+)
+
+PostcodeSearchesStack(
+    app,
+    "PostcodeSearchesStack",
     env=Environment(
         account=os.getenv("CDK_DEFAULT_ACCOUNT"), region="eu-west-2"
     ),
