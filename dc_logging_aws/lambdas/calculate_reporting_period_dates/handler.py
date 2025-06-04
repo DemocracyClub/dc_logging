@@ -1,4 +1,4 @@
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 
@@ -19,15 +19,30 @@ def handler(event, context):
             start_of_election_period_str, "election period start"
         )
 
+    # 00:00 on date beginning election period
     # calculate this in London time to account for daylight savings.
     start_of_election_period_dt = datetime.combine(
         start_of_election_period, time(0, 0, tzinfo=ZoneInfo("Europe/London"))
     )
 
+    # 22:00 on election day
     # calculate this in London time to account for daylight savings.
     close_of_polls = datetime.combine(
         polling_day,
         time(22, 0, tzinfo=ZoneInfo("Europe/London")),
+    )
+
+    # 00:00 on Monday of election week
+    # calculate this in London time to account for daylight savings.
+    start_of_election_week_dt = datetime.combine(
+        get_election_week_start(polling_day),
+        time(0, 0, tzinfo=ZoneInfo("Europe/London")),
+    )
+
+    # 00:00 On Polling Day
+    # calculate this in London time to account for daylight savings.
+    start_of_polling_day_dt = datetime.combine(
+        polling_day, time(0, 0, tzinfo=ZoneInfo("Europe/London"))
     )
 
     return {
@@ -43,6 +58,16 @@ def handler(event, context):
         "start_of_election_period_london": london_athena_time(
             start_of_election_period_dt
         ),
+        "start_of_election_week_utc": utc_athena_time(
+            start_of_election_week_dt
+        ),
+        "start_of_election_week_london": london_athena_time(
+            start_of_election_week_dt
+        ),
+        "start_of_polling_day_utc": utc_athena_time(start_of_polling_day_dt),
+        "start_of_polling_day_london": london_athena_time(
+            start_of_polling_day_dt
+        ),
     }
 
 
@@ -53,6 +78,18 @@ def date_from_string(date_string: str, string_name: str) -> date:
         raise ValueError(
             f"Invalid {string_name}: {date_string}. Either unexpected format, or date doesn't exist. Format should be YYYY-MM-DD"
         )
+
+
+def get_election_week_start(polling_day: date) -> date:
+    """
+    returns date for Monday of week containing polling day
+
+    get_election_week_start(date(2025, 5, 1)) -> datetime.date(2025, 4, 28)
+    get_election_week_start(date(2025, 1, 2)) -> datetime.date(2024, 12, 30)
+    """
+    # This will normally be a thursday (3
+    weekday = polling_day.weekday()  # Monday -> 0, Sunday -> 6
+    return polling_day - timedelta(days=weekday)
 
 
 def get_election_period_start(polling_day: date) -> date:
