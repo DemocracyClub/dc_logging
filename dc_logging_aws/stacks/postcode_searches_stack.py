@@ -14,7 +14,6 @@ from constructs.lambdas.get_parameter_store_variables import (
 )
 from models.buckets import (
     dc_monitoring_production_logging,
-
     postcode_searches_results_bucket,
 )
 from models.databases import dc_wide_logs_db
@@ -59,12 +58,23 @@ class PostcodeSearchesStack(Stack):
         calculate_reporting_period_task = self.calculate_reporting_period_task()
         election_period_total_task = self.election_period_total_task()
 
+        get_election_period_total = tasks.AthenaGetQueryResults(
+            self,
+            "Get election period total",
+            query_execution_id="{% $states.input.Payload.queryExecutionId %}",
+            query_language=sfn.QueryLanguage.JSONATA,
+            assign={
+                "election_period_total": "{% $states.result.ResultSet.Rows[1].Data[0].VarCharValue %}"
+            },
+        )
+
         definition = (
             assign_input_to_variables_task.next(
                 get_parameter_store_variables_task
             )
             .next(calculate_reporting_period_task)
             .next(election_period_total_task)
+            .next(get_election_period_total)
         )
 
         self.step_function = sfn.StateMachine(
@@ -207,6 +217,10 @@ class PostcodeSearchesStack(Stack):
                 "close_of_polls_london": "{% $states.result.Payload.close_of_polls_london %}",
                 "start_of_election_period_utc": "{% $states.result.Payload.start_of_election_period_utc %}",
                 "start_of_election_period_london": "{% $states.result.Payload.start_of_election_period_london %}",
+                "start_of_election_week_utc": "{% $states.result.Payload.start_of_election_week_utc %}",
+                "start_of_election_week_london": "{% $states.result.Payload.start_of_election_week_london %}",
+                "start_of_polling_day_utc": "{% $states.result.Payload.start_of_polling_day_utc %}",
+                "start_of_polling_day_london": "{% $states.result.Payload.start_of_polling_day_london %}",
             },
         )
 
