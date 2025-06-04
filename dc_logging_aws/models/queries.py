@@ -4,7 +4,7 @@ from models.models import BaseQuery
 total_searches_query = BaseQuery(
     name="total_searches_query",
     creation_context={
-        "query_file_path": "election_reporting/totals/total_searches_query.sql"
+        "query_file_path": "election_reporting/total_searches_query.sql"
     },
     database=dc_wide_logs_db,
     query_context={
