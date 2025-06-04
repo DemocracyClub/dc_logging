@@ -20,8 +20,17 @@ from models.buckets import (
 )
 from models.databases import dc_wide_logs_db, polling_stations_public_data_db
 from models.models import BaseQuery, GlueDatabase, GlueTable, S3Bucket
-from models.queries import by_local_authority_query, total_searches_query
-from models.tables import dc_postcode_searches_table, onspd_table
+from models.queries import (
+    by_local_authority_query,
+    by_product_query,
+    total_searches_query,
+)
+from models.tables import (
+    dc_postcode_searches_table,
+    devs_dc_api_keys_table,
+    ec_api_keys_table,
+    onspd_table,
+)
 
 
 class PostcodeSearchesStack(Stack):
@@ -122,7 +131,7 @@ class PostcodeSearchesStack(Stack):
             ).task,
             PostcodeSearchesQueryTask(
                 scope=self,
-                construct_id="ElectionWeekByLocalAuthoritylSearchesQueryTask",
+                construct_id="ElectionWeekByLocalAuthoritySearchesQueryTask",
                 task_name="Election Week By Local Authority Searches",
                 query=by_local_authority_query,
                 athena_lambda_function=self.run_athena_query_lambda.lambda_function,
@@ -137,6 +146,33 @@ class PostcodeSearchesStack(Stack):
                 athena_lambda_function=self.run_athena_query_lambda.lambda_function,
                 period_type="polling_day",
                 result_variable_name="polling_day_searches_by_local_authority",
+            ).task,
+            PostcodeSearchesQueryTask(
+                scope=self,
+                construct_id="ElectionPeriodByProductSearchesQueryTask",
+                task_name="Election Period By Product Searches",
+                query=by_product_query,
+                athena_lambda_function=self.run_athena_query_lambda.lambda_function,
+                period_type="election_period",
+                result_variable_name="election_period_searches_by_product",
+            ).task,
+            PostcodeSearchesQueryTask(
+                scope=self,
+                construct_id="ElectionWeekByProductSearchesQueryTask",
+                task_name="Election Week By Product Searches",
+                query=by_product_query,
+                athena_lambda_function=self.run_athena_query_lambda.lambda_function,
+                period_type="election_week",
+                result_variable_name="election_week_searches_by_product",
+            ).task,
+            PostcodeSearchesQueryTask(
+                scope=self,
+                construct_id="PollingDayByProductSearchesQueryTask",
+                task_name="Election Day By Product Searches",
+                query=by_product_query,
+                athena_lambda_function=self.run_athena_query_lambda.lambda_function,
+                period_type="polling_day",
+                result_variable_name="polling_day_searches_by_product",
             ).task,
         ]
 
@@ -161,7 +197,7 @@ class PostcodeSearchesStack(Stack):
         return [dc_postcode_searches_table]
 
     def managed_tables(self) -> List[GlueTable]:
-        return [onspd_table]
+        return [onspd_table, devs_dc_api_keys_table, ec_api_keys_table]
 
     def collect_tables(self):
         for table in self.managed_tables():
@@ -281,7 +317,11 @@ class PostcodeSearchesStack(Stack):
         )
 
     def queries(self) -> List[BaseQuery]:
-        return [total_searches_query, by_local_authority_query]
+        return [
+            total_searches_query,
+            by_local_authority_query,
+            by_product_query,
+        ]
 
     def make_queries(self, workgroup_name):
         for query in self.queries():
