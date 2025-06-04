@@ -12,6 +12,7 @@ from constructs.lambdas.athena_query_lambda import AthenaQueryLambda
 from constructs.lambdas.get_parameter_store_variables import (
     GetParameterStoreVariables,
 )
+from constructs.tasks.total_searches_query import TotalSearchesQueryTask
 from models.buckets import (
     dc_monitoring_production_logging,
     postcode_searches_results_bucket,
@@ -56,25 +57,53 @@ class PostcodeSearchesStack(Stack):
             self.get_parameter_store_variables_task()
         )
         calculate_reporting_period_task = self.calculate_reporting_period_task()
-        election_period_total_task = self.election_period_total_task()
+        election_period_total_task = TotalSearchesQueryTask(
+            scope=self,
+            construct_id="ElectionPeriodTotalSearchesQueryTask",
+            task_name="Election Period Total Searches",
+            query=total_searches_query,
+            athena_lambda_function=self.run_athena_query_lambda.lambda_function,
+            period_type="election_period",
+            result_variable_name="election_period_total",
+        ).task
 
-        get_election_period_total = tasks.AthenaGetQueryResults(
-            self,
-            "Get election period total",
-            query_execution_id="{% $states.input.Payload.queryExecutionId %}",
-            query_language=sfn.QueryLanguage.JSONATA,
-            assign={
-                "election_period_total": "{% $states.result.ResultSet.Rows[1].Data[0].VarCharValue %}"
-            },
+        election_week_total_task = TotalSearchesQueryTask(
+            scope=self,
+            construct_id="ElectionWeekTotalSearchesQueryTask",
+            task_name="Election Week Total Searches",
+            query=total_searches_query,
+            athena_lambda_function=self.run_athena_query_lambda.lambda_function,
+            period_type="election_week",
+            result_variable_name="election_week_total",
+        ).task
+
+        polling_day_total_task = TotalSearchesQueryTask(
+            scope=self,
+            construct_id="PollingDayTotalSearchesQueryTask",
+            task_name="Election Day Total Searches",
+            query=total_searches_query,
+            athena_lambda_function=self.run_athena_query_lambda.lambda_function,
+            period_type="polling_day",
+            result_variable_name="polling_day_total",
+        ).task
+
+        parallel_get_totals = sfn.Parallel(
+            self, "Get totals for election day, week and period."
         )
+
+        for task in [
+            election_period_total_task,
+            election_week_total_task,
+            polling_day_total_task,
+        ]:
+            parallel_get_totals.branch(task)
 
         definition = (
             assign_input_to_variables_task.next(
                 get_parameter_store_variables_task
             )
             .next(calculate_reporting_period_task)
-            .next(election_period_total_task)
-            .next(get_election_period_total)
+            .next(parallel_get_totals)
         )
 
         self.step_function = sfn.StateMachine(
@@ -222,29 +251,6 @@ class PostcodeSearchesStack(Stack):
                 "start_of_polling_day_utc": "{% $states.result.Payload.start_of_polling_day_utc %}",
                 "start_of_polling_day_london": "{% $states.result.Payload.start_of_polling_day_london %}",
             },
-        )
-
-    def election_period_total_task(self):
-        return tasks.LambdaInvoke(
-            self,
-            "Election Period Total Query",
-            lambda_function=self.run_athena_query_lambda.lambda_function,
-            payload=sfn.TaskInput.from_object(
-                {
-                    "QueryContext": {
-                        "start_of_election_period_day": "{% $polling_day_athena %}",
-                        "polling_day": "{% $start_of_election_period_day_athena %}",
-                        "updown_api_key": "{% $updown_api_key %}",
-                        "start_datetime_utc": "{% $start_of_election_period_utc %}",
-                        "end_datetime_utc": "{% $close_of_polls_utc %}",
-                        "start_datetime_london": "{% $start_of_election_period_london %}",
-                        "end_datetime_london": "{% $close_of_polls_london %}",
-                    },
-                    "QueryName": total_searches_query.name,
-                    "blocking": True,
-                },
-            ),
-            query_language=sfn.QueryLanguage.JSONATA,
         )
 
     def queries(self) -> List[BaseQuery]:
