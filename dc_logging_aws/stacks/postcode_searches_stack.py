@@ -12,14 +12,15 @@ from constructs.lambdas.athena_query_lambda import AthenaQueryLambda
 from constructs.lambdas.get_parameter_store_variables import (
     GetParameterStoreVariables,
 )
-from constructs.tasks.total_searches_query import TotalSearchesQueryTask
+from constructs.tasks.postcode_searches_query import PostcodeSearchesQueryTask
 from models.buckets import (
     dc_monitoring_production_logging,
-    postcode_searches_results_bucket, pollingstations_public_data,
+    pollingstations_public_data,
+    postcode_searches_results_bucket,
 )
 from models.databases import dc_wide_logs_db, polling_stations_public_data_db
 from models.models import BaseQuery, GlueDatabase, GlueTable, S3Bucket
-from models.queries import total_searches_query
+from models.queries import by_local_authority_query, total_searches_query
 from models.tables import dc_postcode_searches_table, onspd_table
 
 
@@ -57,45 +58,12 @@ class PostcodeSearchesStack(Stack):
             self.get_parameter_store_variables_task()
         )
         calculate_reporting_period_task = self.calculate_reporting_period_task()
-        election_period_total_task = TotalSearchesQueryTask(
-            scope=self,
-            construct_id="ElectionPeriodTotalSearchesQueryTask",
-            task_name="Election Period Total Searches",
-            query=total_searches_query,
-            athena_lambda_function=self.run_athena_query_lambda.lambda_function,
-            period_type="election_period",
-            result_variable_name="election_period_total",
-        ).task
-
-        election_week_total_task = TotalSearchesQueryTask(
-            scope=self,
-            construct_id="ElectionWeekTotalSearchesQueryTask",
-            task_name="Election Week Total Searches",
-            query=total_searches_query,
-            athena_lambda_function=self.run_athena_query_lambda.lambda_function,
-            period_type="election_week",
-            result_variable_name="election_week_total",
-        ).task
-
-        polling_day_total_task = TotalSearchesQueryTask(
-            scope=self,
-            construct_id="PollingDayTotalSearchesQueryTask",
-            task_name="Election Day Total Searches",
-            query=total_searches_query,
-            athena_lambda_function=self.run_athena_query_lambda.lambda_function,
-            period_type="polling_day",
-            result_variable_name="polling_day_total",
-        ).task
 
         parallel_get_totals = sfn.Parallel(
             self, "Get totals for election day, week and period."
         )
 
-        for task in [
-            election_period_total_task,
-            election_week_total_task,
-            polling_day_total_task,
-        ]:
+        for task in self.query_tasks():
             parallel_get_totals.branch(task)
 
         definition = (
@@ -114,11 +82,69 @@ class PostcodeSearchesStack(Stack):
             timeout=Duration.minutes(10),
         )
 
+    def query_tasks(self) -> List[tasks.LambdaInvoke]:
+        return [
+            PostcodeSearchesQueryTask(
+                scope=self,
+                construct_id="ElectionPeriodTotalSearchesQueryTask",
+                task_name="Election Period Total Searches",
+                query=total_searches_query,
+                athena_lambda_function=self.run_athena_query_lambda.lambda_function,
+                period_type="election_period",
+                result_variable_name="election_period_total",
+            ).task,
+            PostcodeSearchesQueryTask(
+                scope=self,
+                construct_id="ElectionWeekTotalSearchesQueryTask",
+                task_name="Election Week Total Searches",
+                query=total_searches_query,
+                athena_lambda_function=self.run_athena_query_lambda.lambda_function,
+                period_type="election_week",
+                result_variable_name="election_week_total",
+            ).task,
+            PostcodeSearchesQueryTask(
+                scope=self,
+                construct_id="PollingDayTotalSearchesQueryTask",
+                task_name="Election Day Total Searches",
+                query=total_searches_query,
+                athena_lambda_function=self.run_athena_query_lambda.lambda_function,
+                period_type="polling_day",
+                result_variable_name="polling_day_total",
+            ).task,
+            PostcodeSearchesQueryTask(
+                scope=self,
+                construct_id="ElectionPeriodByLocalAuthoritySearchesQueryTask",
+                task_name="Election Period By Local Authority Searches",
+                query=by_local_authority_query,
+                athena_lambda_function=self.run_athena_query_lambda.lambda_function,
+                period_type="election_period",
+                result_variable_name="election_period_searches_by_local_authority",
+            ).task,
+            PostcodeSearchesQueryTask(
+                scope=self,
+                construct_id="ElectionWeekByLocalAuthoritylSearchesQueryTask",
+                task_name="Election Week By Local Authority Searches",
+                query=by_local_authority_query,
+                athena_lambda_function=self.run_athena_query_lambda.lambda_function,
+                period_type="election_week",
+                result_variable_name="election_week_searches_by_local_authority",
+            ).task,
+            PostcodeSearchesQueryTask(
+                scope=self,
+                construct_id="PollingDayByLocalAuthoritySearchesQueryTask",
+                task_name="Election Day By Local Authority Searches",
+                query=by_local_authority_query,
+                athena_lambda_function=self.run_athena_query_lambda.lambda_function,
+                period_type="polling_day",
+                result_variable_name="polling_day_searches_by_local_authority",
+            ).task,
+        ]
+
     def s3_buckets(self) -> List[S3Bucket]:
         return [
             postcode_searches_results_bucket,
             dc_monitoring_production_logging,
-            pollingstations_public_data
+            pollingstations_public_data,
         ]
 
     def collect_buckets(self):
@@ -255,7 +281,7 @@ class PostcodeSearchesStack(Stack):
         )
 
     def queries(self) -> List[BaseQuery]:
-        return [total_searches_query]
+        return [total_searches_query, by_local_authority_query]
 
     def make_queries(self, workgroup_name):
         for query in self.queries():
