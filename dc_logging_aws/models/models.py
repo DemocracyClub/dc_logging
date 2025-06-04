@@ -14,6 +14,14 @@ class GlueDatabase:
 
 
 @dataclass
+class BaseQuery:
+    name: str
+    creation_context: dict
+    query_context: dict
+    database: GlueDatabase
+
+
+@dataclass
 class GlueTable:
     table_name: str
     description: str
@@ -24,3 +32,4 @@ class GlueTable:
     columns: dict[str : glue.Schema]
     partition_keys: list[glue.Column] = None
     depends_on: list = None
+    populated_with: BaseQuery = None
