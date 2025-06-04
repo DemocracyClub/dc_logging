@@ -2,26 +2,32 @@ from pathlib import Path
 from typing import List
 
 import aws_cdk.aws_glue_alpha as glue
-from aws_cdk import Duration, Stack, aws_lambda
+from aws_cdk import Duration, Fn, Stack, aws_lambda
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_stepfunctions as sfn
 from aws_cdk import aws_stepfunctions_tasks as tasks
 from constructs import Construct
+from constructs.athena_named_query_from_model import AthenaNamedQueryFromModel
+from constructs.lambdas.athena_query_lambda import AthenaQueryLambda
 from constructs.lambdas.get_parameter_store_variables import (
     GetParameterStoreVariables,
 )
 from models.buckets import (
     dc_monitoring_production_logging,
+
     postcode_searches_results_bucket,
 )
 from models.databases import dc_wide_logs_db
-from models.models import GlueDatabase, GlueTable, S3Bucket
+from models.models import BaseQuery, GlueDatabase, GlueTable, S3Bucket
+from models.queries import total_searches_query
 from models.tables import dc_postcode_searches_table
 
 
 class PostcodeSearchesStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
+
+        workgroup_name = Fn.import_value("PostcodeSearchesWorkgroupName")
 
         self.buckets_by_name = {}
         self.collect_buckets()
@@ -31,6 +37,15 @@ class PostcodeSearchesStack(Stack):
 
         self.tables_by_name = {}
         self.collect_tables()
+
+        self.make_queries(workgroup_name)
+
+        self.run_athena_query_lambda = AthenaQueryLambda(
+            self,
+            resource_id="RunAthenaQueryLambda",
+            workgroup_name=workgroup_name,
+            database_name=dc_wide_logs_db.database_name,
+        )
 
         self.get_parameter_store_variables_lambda = GetParameterStoreVariables(
             self,
@@ -42,10 +57,15 @@ class PostcodeSearchesStack(Stack):
             self.get_parameter_store_variables_task()
         )
         calculate_reporting_period_task = self.calculate_reporting_period_task()
+        election_period_total_task = self.election_period_total_task()
 
-        definition = assign_input_to_variables_task.next(
-            get_parameter_store_variables_task
-        ).next(calculate_reporting_period_task)
+        definition = (
+            assign_input_to_variables_task.next(
+                get_parameter_store_variables_task
+            )
+            .next(calculate_reporting_period_task)
+            .next(election_period_total_task)
+        )
 
         self.step_function = sfn.StateMachine(
             self,
@@ -189,3 +209,38 @@ class PostcodeSearchesStack(Stack):
                 "start_of_election_period_london": "{% $states.result.Payload.start_of_election_period_london %}",
             },
         )
+
+    def election_period_total_task(self):
+        return tasks.LambdaInvoke(
+            self,
+            "Election Period Total Query",
+            lambda_function=self.run_athena_query_lambda.lambda_function,
+            payload=sfn.TaskInput.from_object(
+                {
+                    "QueryContext": {
+                        "start_of_election_period_day": "{% $polling_day_athena %}",
+                        "polling_day": "{% $start_of_election_period_day_athena %}",
+                        "updown_api_key": "{% $updown_api_key %}",
+                        "start_datetime_utc": "{% $start_of_election_period_utc %}",
+                        "end_datetime_utc": "{% $close_of_polls_utc %}",
+                        "start_datetime_london": "{% $start_of_election_period_london %}",
+                        "end_datetime_london": "{% $close_of_polls_london %}",
+                    },
+                    "QueryName": total_searches_query.name,
+                    "blocking": True,
+                },
+            ),
+            query_language=sfn.QueryLanguage.JSONATA,
+        )
+
+    def queries(self) -> List[BaseQuery]:
+        return [total_searches_query]
+
+    def make_queries(self, workgroup_name):
+        for query in self.queries():
+            AthenaNamedQueryFromModel(
+                self,
+                resource_id=f"{query.name} named query",
+                query=query,
+                workgroup_name=workgroup_name,
+            )
