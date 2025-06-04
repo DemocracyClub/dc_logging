@@ -1,3 +1,4 @@
+from typing import Optional
 
 from aws_cdk import aws_stepfunctions as sfn
 from aws_cdk import aws_stepfunctions_tasks as tasks
@@ -5,7 +6,7 @@ from constructs import Construct
 from models.models import BaseQuery
 
 
-class TotalSearchesQueryTask(Construct):
+class PostcodeSearchesQueryTask(Construct):
     """
     A construct that creates a Step Functions task for running Athena queries
     with configurable time period variables and automatic result extraction.
@@ -19,13 +20,13 @@ class TotalSearchesQueryTask(Construct):
         query: BaseQuery,
         athena_lambda_function,
         period_type: str,
-        result_variable_name: str,
+        result_variable_name: Optional[str] = None,
     ) -> None:
         super().__init__(scope, construct_id)
 
         base_config = {
-            "start_of_election_period_day": "{% $polling_day_athena %}",
-            "polling_day": "{% $start_of_election_period_day_athena %}",
+            "start_of_election_period_day": "{% $start_of_election_period_day_athena %}",
+            "polling_day": "{% $polling_day_athena %}",
             "updown_api_key": "{% $updown_api_key %}",
             "end_datetime_utc": "{% $close_of_polls_utc %}",
             "end_datetime_london": "{% $close_of_polls_london %}",
@@ -56,6 +57,9 @@ class TotalSearchesQueryTask(Construct):
         query_context = period_configs[period_type]
         query_context["updown_api_key"] = "{% $updown_api_key %}"
 
+        if result_variable_name is None:
+            result_variable_name = query.name
+
         # Create the query execution task
         query_task = tasks.LambdaInvoke(
             self,
@@ -69,17 +73,11 @@ class TotalSearchesQueryTask(Construct):
                 }
             ),
             query_language=sfn.QueryLanguage.JSONATA,
-        )
-
-        result_task = tasks.AthenaGetQueryResults(
-            self,
-            f"Get {task_name} Result",
-            query_execution_id="{% $states.input.Payload.queryExecutionId %}",
-            query_language=sfn.QueryLanguage.JSONATA,
             assign={
-                result_variable_name: "{% $states.result.ResultSet.Rows[1].Data[0].VarCharValue %}"
+                result_variable_name: "{% $states.result.Payload.queryExecutionId %}"
             },
         )
 
-        # Chain the tasks together to be an entry point
-        self.task = query_task.next(result_task)
+        self.task = query_task
+
+        # ToDo: Do something with the result
