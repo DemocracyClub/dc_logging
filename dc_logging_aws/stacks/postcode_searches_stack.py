@@ -1,9 +1,15 @@
+from pathlib import Path
 from typing import List
 
 import aws_cdk.aws_glue_alpha as glue
-from aws_cdk import Stack
+from aws_cdk import Duration, Stack, aws_lambda
 from aws_cdk import aws_s3 as s3
+from aws_cdk import aws_stepfunctions as sfn
+from aws_cdk import aws_stepfunctions_tasks as tasks
 from constructs import Construct
+from constructs.lambdas.get_parameter_store_variables import (
+    GetParameterStoreVariables,
+)
 from models.buckets import (
     dc_monitoring_production_logging,
     postcode_searches_results_bucket,
@@ -25,6 +31,29 @@ class PostcodeSearchesStack(Stack):
 
         self.tables_by_name = {}
         self.collect_tables()
+
+        self.get_parameter_store_variables_lambda = GetParameterStoreVariables(
+            self,
+            resource_id="GetParameterStoreVariables",
+        ).lambda_function
+
+        assign_input_to_variables_task = self.assign_input_variables_task()
+        get_parameter_store_variables_task = (
+            self.get_parameter_store_variables_task()
+        )
+        calculate_reporting_period_task = self.calculate_reporting_period_task()
+
+        definition = assign_input_to_variables_task.next(
+            get_parameter_store_variables_task
+        ).next(calculate_reporting_period_task)
+
+        self.step_function = sfn.StateMachine(
+            self,
+            "PostcodeSearchesReporting",
+            state_machine_name="PostcodeSearchesReporting",
+            definition=definition,
+            timeout=Duration.minutes(10),
+        )
 
     def s3_buckets(self) -> List[S3Bucket]:
         return [
@@ -102,4 +131,61 @@ class PostcodeSearchesStack(Stack):
         )
         return glue.Database.from_database_arn(
             self, f"{db.database_name}_db", db_arn
+        )
+
+    def assign_input_variables_task(self):
+        return sfn.Pass(
+            self,
+            "Assign Input to Variables",
+            query_language=sfn.QueryLanguage.JSONATA,
+            assign={
+                "polling_day": "{% $states.input.polling_day %}",
+            },
+        )
+
+    def get_parameter_store_variables_task(self):
+        return tasks.LambdaInvoke(
+            self,
+            "Get Parameter Store Variables",
+            lambda_function=self.get_parameter_store_variables_lambda,
+            query_language=sfn.QueryLanguage.JSONATA,
+            payload=sfn.TaskInput.from_object(
+                {"parameter_names": ["UPDOWN_API_KEY"]}
+            ),
+            assign={
+                "updown_api_key": "{% $states.result.Payload.UPDOWN_API_KEY %}"
+            },
+        )
+
+    def calculate_reporting_period_task(self):
+        # Step Functions task to assign variables for reporting periods
+        return tasks.LambdaInvoke(
+            self,
+            "Calculate Reporting Period Dates",
+            lambda_function=aws_lambda.Function(
+                self,
+                "calculate_reporting_period",
+                function_name="calculate_reporting_period",
+                runtime=aws_lambda.Runtime.PYTHON_3_12,
+                code=aws_lambda.Code.from_asset(
+                    str(
+                        Path(__file__).resolve().parent.parent
+                        / "lambdas"
+                        / "calculate_reporting_period_dates"
+                    )
+                ),
+                handler="handler.handler",
+            ),
+            payload=sfn.TaskInput.from_object(
+                {"polling_day": "{% $polling_day %}"}
+            ),
+            query_language=sfn.QueryLanguage.JSONATA,
+            assign={
+                "polling_day_athena": "{% $states.result.Payload.polling_day_athena %}",
+                "start_of_election_period_day_athena": "{% $states.result.Payload.start_of_election_period_day_athena %}",
+                "close_of_polls_utc": "{% $states.result.Payload.close_of_polls_utc %}",
+                "close_of_polls_london": "{% $states.result.Payload.close_of_polls_london %}",
+                "start_of_election_period_utc": "{% $states.result.Payload.start_of_election_period_utc %}",
+                "start_of_election_period_london": "{% $states.result.Payload.start_of_election_period_london %}",
+            },
         )
