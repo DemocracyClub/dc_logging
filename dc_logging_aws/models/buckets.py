@@ -4,6 +4,10 @@ Define the S3 buckets used anywhere in the stack
 
 from models.models import S3Bucket
 
+pollingstations_public_data = S3Bucket(
+    bucket_name="pollingstations.public.data"
+)
+
 postcode_searches_results_bucket = S3Bucket(
     bucket_name="dc-monitoring-query-results"
 )
