@@ -15,12 +15,12 @@ from constructs.lambdas.get_parameter_store_variables import (
 from constructs.tasks.total_searches_query import TotalSearchesQueryTask
 from models.buckets import (
     dc_monitoring_production_logging,
-    postcode_searches_results_bucket,
+    postcode_searches_results_bucket, pollingstations_public_data,
 )
-from models.databases import dc_wide_logs_db
+from models.databases import dc_wide_logs_db, polling_stations_public_data_db
 from models.models import BaseQuery, GlueDatabase, GlueTable, S3Bucket
 from models.queries import total_searches_query
-from models.tables import dc_postcode_searches_table
+from models.tables import dc_postcode_searches_table, onspd_table
 
 
 class PostcodeSearchesStack(Stack):
@@ -118,6 +118,7 @@ class PostcodeSearchesStack(Stack):
         return [
             postcode_searches_results_bucket,
             dc_monitoring_production_logging,
+            pollingstations_public_data
         ]
 
     def collect_buckets(self):
@@ -134,7 +135,7 @@ class PostcodeSearchesStack(Stack):
         return [dc_postcode_searches_table]
 
     def managed_tables(self) -> List[GlueTable]:
-        return []
+        return [onspd_table]
 
     def collect_tables(self):
         for table in self.managed_tables():
@@ -174,7 +175,7 @@ class PostcodeSearchesStack(Stack):
         )
 
     def databases(self) -> List[GlueDatabase]:
-        return [dc_wide_logs_db]
+        return [dc_wide_logs_db, polling_stations_public_data_db]
 
     def get_databases(self):
         for database in self.databases():
