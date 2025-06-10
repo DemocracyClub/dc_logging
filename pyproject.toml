@@ -1,3 +1,45 @@
+[project]
+name = "dc_logging_utils"
+version = "2.0.0"
+description = "DC Logging client and log querying infrastructure"
+readme= "README.md"
+requires-python = "==3.12.*"
+dependencies = [
+    # Matches the Node version of the CDK in package.json
+    "aws-cdk-lib<3.0.0,>=2.162.1",
+    "aws_cdk.aws_lambda_python_alpha>= 2.0.0alpha1",
+    "aws-cdk.aws-kinesisfirehose-alpha>= 2.104.0a0",
+    "aws-cdk.aws-kinesisfirehose-destinations-alpha>= 2.104.0a0",
+    "aws-cdk.aws-glue-alpha==2.104.0a0",
+    "constructs>=10.0.0",
+    "cachetools==v5.2.0",
+    "wheel==0.38.4",
+    "urllib3==1.26.19",
+    "attrs==23.1.0",
+    "dc-logging-utils",
+]
+
+[dependency-groups]
+dev = [
+    "boto3==1.35.*",
+    "mypy-boto3-organizations",
+    "mypy-boto3-ssm",
+    "ruff==0.1.8",
+    "ipdb",
+    "pytest==7.2.2",
+    "pytest-ruff",
+    "pytest-cov",
+    "boto3-stubs[firehose,s3,sts,organizations,lambda]==1.28.80",
+    "psycopg[binary]",
+    "tqdm",
+    "moto[firehose,awslambda,apigateway,proxy,sts]==5.0.19",
+]
+
+[tool.uv]
+required-version = "<0.6.0"
+
+[tool.uv.sources]
+dc-logging-utils = { path = "." }
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -6,6 +48,8 @@ norecursedirs = ["cdk.out", "node_modules"]
 
 [tool.ruff]
 line-length = 80
+
+[tool.ruff.lint]
 ignore = ["E501"]
 extend-select = [
     "I",
