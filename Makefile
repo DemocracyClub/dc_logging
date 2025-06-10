@@ -14,7 +14,7 @@ $(OUTPUT_FOLDER):
 
 $(OUTPUT_FILE): $(DATA_FILES)
 	# Command to generate output.yaml using the data files
-	DC_ENVIRONMENT=development LOGS_BUCKET_NAME="dc-monitoring-dev-logging" pipenv run npx aws-cdk synth > $(OUTPUT_FILE)
+	DC_ENVIRONMENT=development LOGS_BUCKET_NAME="dc-monitoring-dev-logging" uv run npx aws-cdk synth > $(OUTPUT_FILE)
 
 
 cfn_template_for_tests: $(OUTPUT_FOLDER) $(OUTPUT_FILE)
