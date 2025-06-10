@@ -1,0 +1,21 @@
+name: 'Test'
+description: 'Code qa and tests'
+
+runs:
+  using: composite
+  steps:
+    - name: Check Workflows
+      shell: bash
+      run: uvx zizmor .
+
+    - name: Pre-test checks
+      shell: bash
+      run: uv run scripts/code-check.sh
+
+    - name: Make CloudFormation Template for testing
+      shell: bash
+      run: make cfn_template_for_tests
+
+    - name: Run tests
+      shell: bash
+      run: ./scripts/run-tests.sh

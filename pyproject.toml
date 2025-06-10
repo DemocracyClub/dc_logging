@@ -43,7 +43,6 @@ dc-logging-utils = { path = "." }
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-sx --ruff --ruff-format"
 norecursedirs = ["cdk.out", "node_modules"]
 
 [tool.ruff]
