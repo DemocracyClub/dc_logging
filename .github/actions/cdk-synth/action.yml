@@ -8,6 +8,9 @@ inputs:
   dc-environment:
     description: 'Environment to deploy to (development, staging, production)'
     required: true
+  logs-bucket-name:
+    description: 'Name of bucket to send logs to'
+    required: true
 
 runs:
   using: composite
@@ -27,6 +30,7 @@ runs:
       shell: bash
       env:
         DC_ENVIRONMENT: ${{ inputs.dc-environment }}
+        LOGS_BUCKET_NAME: ${{ inputs.logs-bucket-name }}
 
 #   ToDo: This produces changes on CI, but not when run locally.
 #    - name: Check Diagram
