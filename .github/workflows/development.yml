@@ -44,6 +44,7 @@ jobs:
         with:
           dc-environment: ${{ vars.DC_ENVIRONMENT }}
           aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          logs-bucket-name: ${{ secrets.LOGS_BUCKET_NAME }}
 
   cdk-deploy:
     name: CDK Deploy (Dev)
@@ -63,3 +64,4 @@ jobs:
         with:
           dc-environment: ${{ vars.DC_ENVIRONMENT }}
           aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          logs-bucket-name: ${{ secrets.LOGS_BUCKET_NAME }}

@@ -7,6 +7,9 @@ inputs:
   aws-role-arn:
     description: 'ARN of AWS account to assume'
     required: true
+  logs-bucket-name:
+    description: 'Name of bucket to send logs to'
+    required: true
 
 runs:
   using: composite
@@ -31,3 +34,4 @@ runs:
       shell: bash
       env:
         DC_ENVIRONMENT: ${{ inputs.dc-environment }}
+        LOGS_BUCKET_NAME: ${{ inputs.logs-bucket-name }}
