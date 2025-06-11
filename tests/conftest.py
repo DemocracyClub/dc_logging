@@ -52,11 +52,14 @@ def mock_aws_services(aws_credentials):
 
 @pytest.fixture(scope="session")
 def mock_log_streams(mock_aws_services):
-    s3_client: S3Client = boto3.client("s3")
+    s3_client: S3Client = boto3.client("s3", region_name="eu-west-2")
     firehose_client: FirehoseClient = boto3.client(
         "firehose", region_name="eu-west-2"
     )
-    s3_client.create_bucket(Bucket="test-bucket")
+    s3_client.create_bucket(
+        Bucket="test-bucket",
+        CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
+    )
 
     stream_class_list = [DCWidePostcodeLoggingClient]
     for cls in stream_class_list:

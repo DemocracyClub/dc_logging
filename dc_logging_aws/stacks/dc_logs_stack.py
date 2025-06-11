@@ -7,8 +7,7 @@ from typing import Type
 
 import aws_cdk.aws_glue_alpha as glue
 import aws_cdk.aws_iam as iam
-import aws_cdk.aws_kinesisfirehose_alpha as firehose
-import aws_cdk.aws_kinesisfirehose_destinations_alpha as firehose_destinations
+import aws_cdk.aws_kinesisfirehose as firehose
 import aws_cdk.aws_lambda as aws_lambda
 import aws_cdk.aws_lambda_python_alpha as lambda_python
 import aws_cdk.aws_s3 as s3
@@ -182,13 +181,11 @@ class DCLogsStack(Stack):
         firehose.DeliveryStream(
             self,
             cls.stream_name,
-            destinations=[
-                firehose_destinations.S3Bucket(
-                    self.bucket,
-                    data_output_prefix=f"{cls.stream_name}/",
-                    compression=firehose_destinations.Compression.GZIP,
-                )
-            ],
+            destination=firehose.S3Bucket(
+                self.bucket,
+                data_output_prefix=f"{cls.stream_name}/",
+                compression=firehose.Compression.GZIP,
+            ),
             delivery_stream_name=cls.stream_name,
         )
 
