@@ -28,6 +28,8 @@ jobs:
 
   cdk-synth:
     name: CDK Synth (Dev)
+    permissions:
+      id-token: write
     environment: development
     runs-on: ubuntu-24.04
     needs: build-and-test
@@ -41,6 +43,7 @@ jobs:
         uses: ./.github/actions/cdk-synth
         with:
           dc-environment: ${{ vars.DC_ENVIRONMENT }}
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
 
   cdk-deploy:
     name: CDK Deploy (Dev)
