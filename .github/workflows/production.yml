@@ -1,0 +1,69 @@
+name: Production Test & Deploy
+run-name: ${{ github.ref_name }} (prod)
+on:
+  push:
+    branches:
+      - 'main'
+permissions: {}
+
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    permissions:
+      id-token: write
+    environment: development  # Tests still run with dev env
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install
+        uses: ./.github/actions/install
+
+      - name: Test
+        uses: ./.github/actions/test
+        with:
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+
+  cdk-synth:
+    name: CDK Synth (Prod)
+    permissions:
+      id-token: write
+    environment: production
+    runs-on: ubuntu-24.04
+    needs: build-and-test
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: CDK Synth
+        uses: ./.github/actions/cdk-synth
+        with:
+          dc-environment: ${{ vars.DC_ENVIRONMENT }}
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          logs-bucket-name: ${{ secrets.LOGS_BUCKET_NAME }}
+
+  cdk-deploy:
+    name: CDK Deploy (Prod)
+    permissions:
+      id-token: write
+    environment: production
+    runs-on: ubuntu-24.04
+    needs: cdk-synth
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: CDK Deploy
+        uses: ./.github/actions/cdk-deploy
+        with:
+          dc-environment: ${{ vars.DC_ENVIRONMENT }}
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          logs-bucket-name: ${{ secrets.LOGS_BUCKET_NAME }}
