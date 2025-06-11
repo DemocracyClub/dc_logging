@@ -14,10 +14,10 @@ The logging client provides four things:
 
 Docker is required on the local system to run test.
 
-* Install Python dependencies: `pipenv sync --dev`
-* Run the test suite: `pytest`
-* Run lint checks: `ruff .`
-* Auto-format: `ruff format`
+* Install Python dependencies: `uv sync`
+* Run the test suite: `./scripts/run-tests.sh`
+* Run lint checks: `./scripts/code-check.sh`
+* Auto-format: `./scripts/code-format.sh`
 
 #### Testing
 
@@ -30,12 +30,13 @@ as it contains actual values from the deployment.
 
 ### Installation
 
-Install the desired version using pip or pipenv.
+To install in another project, target the desired version from releases on github.
 
-For pipenv, especially on projects deployed on AWS Lambda, it's advised to use
-the `zip` package from the release page:
+eg:
 
-`pipenv install https://github.com/DemocracyClub/dc_logging/archive/refs/tags/[VERSION].zip`
+* `pip install https://github.com/DemocracyClub/dc_logging/archive/refs/tags/[VERSION].zip`
+* `uv add https://github.com/DemocracyClub/dc_logging/archive/refs/tags/[VERSION].zip`
+* `pipenv install https://github.com/DemocracyClub/dc_logging/archive/refs/tags/[VERSION].zip`
 
 
 ### Using the library
