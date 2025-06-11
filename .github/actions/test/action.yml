@@ -4,6 +4,9 @@ inputs:
   aws-role-arn:
     description: 'ARN of AWS account to assume'
     required: true
+  codecov-token:
+    description: 'Token for uploading to codecov.io'
+    required: true
 
 
 runs:
@@ -30,3 +33,10 @@ runs:
     - name: Run tests
       shell: bash
       run: ./scripts/run-tests.sh
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v5
+      with:
+        files: ./coverage.xml
+      env:
+        CODECOV_TOKEN: ${{ inputs.codecov-token }}

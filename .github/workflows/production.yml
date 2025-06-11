@@ -27,6 +27,7 @@ jobs:
         uses: ./.github/actions/test
         with:
           aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   cdk-synth:
     name: CDK Synth (Prod)
