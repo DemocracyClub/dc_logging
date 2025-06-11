@@ -2,6 +2,9 @@
 name: 'CDK Synth'
 description: 'Check CDK output is valid'
 inputs:
+  aws-role-arn:
+    description: 'ARN of AWS account to assume'
+    required: true
   dc-environment:
     description: 'Environment to deploy to (development, staging, production)'
     required: true
@@ -12,6 +15,12 @@ runs:
 
     - name: Python setup
       uses: ./.github/actions/install
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: eu-west-2
+        role-to-assume: ${{ inputs.aws-role-arn }}
 
     - name: CDK Synth
       run: scripts/cdk-synth.sh --all
