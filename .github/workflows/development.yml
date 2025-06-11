@@ -7,6 +7,10 @@ permissions: {}
 
 jobs:
   build-and-test:
+    name: Build and Test
+    permissions:
+      id-token: write
+    environment: development
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
@@ -19,6 +23,8 @@ jobs:
 
       - name: Test
         uses: ./.github/actions/test
+        with:
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
 
   cdk-synth:
     name: CDK Synth (Dev)

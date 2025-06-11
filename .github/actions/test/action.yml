@@ -1,5 +1,10 @@
 name: 'Test'
 description: 'Code qa and tests'
+inputs:
+  aws-role-arn:
+    description: 'ARN of AWS account to assume'
+    required: true
+
 
 runs:
   using: composite
@@ -11,6 +16,12 @@ runs:
     - name: Pre-test checks
       shell: bash
       run: uv run scripts/code-check.sh
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: eu-west-2
+        role-to-assume: ${{ inputs.aws-role-arn }}
 
     - name: Make CloudFormation Template for testing
       shell: bash
