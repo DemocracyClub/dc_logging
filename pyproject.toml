@@ -41,6 +41,7 @@ dc-logging-utils = { path = "." }
 
 [tool.pytest.ini_options]
 minversion = "6.0"
+addopts = "--cov=dc_logging_client --cov-report xml:coverage.xml"
 norecursedirs = ["cdk.out", "node_modules"]
 
 [tool.ruff]

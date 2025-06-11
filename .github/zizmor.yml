@@ -5,3 +5,4 @@ rules:
         actions/*: ref-pin
         aws-actions/configure-aws-credentials: ref-pin
         astral-sh/setup-uv: ref-pin
+        codecov/codecov-action: ref-pin
