@@ -2,6 +2,7 @@ import os
 import sys
 import typing
 from datetime import datetime
+from pathlib import Path
 from typing import Type
 
 import aws_cdk.aws_glue_alpha as glue
@@ -15,7 +16,7 @@ import boto3
 from aws_cdk import Duration, Stack
 from constructs import Construct
 
-sys.path.append("..")
+sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
 from dc_logging_client.log_client import BaseLoggingClient  # noqa
 
