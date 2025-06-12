@@ -1,10 +1,21 @@
 [project]
 name = "dc_logging_utils"
+authors = [
+  {name = "Sym Roe", email = "sym.roe@democracyclub.org.uk"},
+]
+license = "BSD-3-Clause"
 version = "2.0.0"
 description = "DC Logging client and log querying infrastructure"
 readme= "README.md"
-requires-python = "==3.12.*"
-dependencies = [
+requires-python = ">=3.11"
+dependencies = ["boto3>=1,<2"]
+
+[project.urls]
+source = "https://github.com/DemocracyClub/dc_logging"
+tracker = "https://github.com/DemocracyClub/dc_logging/issues"
+
+[dependency-groups]
+aws = [
     # Matches the Node version of the CDK in package.json
     "aws-cdk-lib==2.200.1",
     "aws_cdk.aws_lambda_python_alpha==2.200.1a0",
@@ -16,8 +27,6 @@ dependencies = [
     "attrs==23.1.0",
     "dc-logging-utils",
 ]
-
-[dependency-groups]
 dev = [
     "boto3==1.35.99",
     "mypy-boto3-organizations==1.28.36",
@@ -39,6 +48,14 @@ required-version = "<0.6.0"
 
 [tool.uv.sources]
 dc-logging-utils = { path = "." }
+
+[tool.uv.build-backend]
+module-name = "dc_logging_client"
+module-root = ""
+
+[build-system]
+requires = ["uv_build>=0.7.12,<0.8.0"]
+build-backend = "uv_build"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
