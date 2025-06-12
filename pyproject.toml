@@ -31,6 +31,7 @@ dev = [
     "psycopg[binary]==3.2.9",
     "tqdm==4.67.1",
     "moto[firehose,awslambda,apigateway,proxy,sts]==5.0.19",
+    "yamllint==1.37.1",
 ]
 
 [tool.uv]
