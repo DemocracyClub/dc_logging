@@ -17,5 +17,5 @@ runs:
           **/pyproject.toml
 
     - name: Create venv
-      run: uv sync
+      run: uv sync --all-groups
       shell: bash
