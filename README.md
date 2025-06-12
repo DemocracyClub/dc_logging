@@ -14,7 +14,7 @@ The logging client provides four things:
 
 Docker is required on the local system to run test.
 
-* Install Python dependencies: `uv sync`
+* Install Python dependencies: `uv sync --all-groups`
 * Run the test suite: `./scripts/run-tests.sh`
 * Run lint checks: `./scripts/code-check.sh`
 * Auto-format: `./scripts/code-format.sh`
