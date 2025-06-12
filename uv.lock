@@ -431,11 +431,11 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "attrs", specifier = "==23.1.0" },
-    { name = "aws-cdk-aws-glue-alpha", specifier = ">=2.195.0a0" },
-    { name = "aws-cdk-aws-lambda-python-alpha", specifier = ">=2.195.0a0" },
-    { name = "aws-cdk-lib", specifier = ">=2.195.0,<3.0.0" },
+    { name = "aws-cdk-aws-glue-alpha", specifier = "==2.200.1a0" },
+    { name = "aws-cdk-aws-lambda-python-alpha", specifier = "==2.200.1a0" },
+    { name = "aws-cdk-lib", specifier = "==2.200.1" },
     { name = "cachetools", specifier = "==5.2.0" },
-    { name = "constructs", specifier = ">=10.0.0" },
+    { name = "constructs", specifier = "==10.4.2" },
     { name = "dc-logging-utils", virtual = "." },
     { name = "urllib3", specifier = "==1.26.19" },
     { name = "wheel", specifier = "==0.38.4" },
@@ -443,18 +443,18 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "boto3", specifier = "==1.35.*" },
+    { name = "boto3", specifier = "==1.35.99" },
     { name = "boto3-stubs", extras = ["firehose", "s3", "sts", "organizations", "lambda"], specifier = "==1.28.80" },
-    { name = "ipdb" },
+    { name = "ipdb", specifier = "==0.13.13" },
     { name = "moto", extras = ["firehose", "awslambda", "apigateway", "proxy", "sts"], specifier = "==5.0.19" },
-    { name = "mypy-boto3-organizations" },
-    { name = "mypy-boto3-ssm" },
-    { name = "psycopg", extras = ["binary"] },
+    { name = "mypy-boto3-organizations", specifier = "==1.28.36" },
+    { name = "mypy-boto3-ssm", specifier = "==1.38.5" },
+    { name = "psycopg", extras = ["binary"], specifier = "==3.2.9" },
     { name = "pytest", specifier = "==7.2.2" },
-    { name = "pytest-cov" },
-    { name = "pytest-ruff" },
+    { name = "pytest-cov", specifier = "==6.1.1" },
+    { name = "pytest-ruff", specifier = "==0.4.1" },
     { name = "ruff", specifier = "==0.1.8" },
-    { name = "tqdm" },
+    { name = "tqdm", specifier = "==4.67.1" },
 ]
 
 [[package]]

@@ -6,10 +6,10 @@ readme= "README.md"
 requires-python = "==3.12.*"
 dependencies = [
     # Matches the Node version of the CDK in package.json
-    "aws-cdk-lib<3.0.0,>=2.195.0",
-    "aws_cdk.aws_lambda_python_alpha>=2.195.0a0",
-    "aws-cdk.aws-glue-alpha>=2.195.0a0",
-    "constructs>=10.0.0",
+    "aws-cdk-lib==2.200.1",
+    "aws_cdk.aws_lambda_python_alpha==2.200.1a0",
+    "aws-cdk.aws-glue-alpha==2.200.1a0",
+    "constructs==10.4.2",
     "cachetools==v5.2.0",
     "wheel==0.38.4",
     "urllib3==1.26.19",
@@ -19,17 +19,17 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "boto3==1.35.*",
-    "mypy-boto3-organizations",
-    "mypy-boto3-ssm",
+    "boto3==1.35.99",
+    "mypy-boto3-organizations==1.28.36",
+    "mypy-boto3-ssm==1.38.5",
     "ruff==0.1.8",
-    "ipdb",
+    "ipdb==0.13.13",
     "pytest==7.2.2",
-    "pytest-ruff",
-    "pytest-cov",
+    "pytest-ruff==0.4.1",
+    "pytest-cov==6.1.1",
     "boto3-stubs[firehose,s3,sts,organizations,lambda]==1.28.80",
-    "psycopg[binary]",
-    "tqdm",
+    "psycopg[binary]==3.2.9",
+    "tqdm==4.67.1",
     "moto[firehose,awslambda,apigateway,proxy,sts]==5.0.19",
 ]
 
