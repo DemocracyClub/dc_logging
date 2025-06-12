@@ -18,7 +18,9 @@ runs:
 
     - name: Pre-test checks
       shell: bash
-      run: uv run scripts/code-check.sh
+      run: |
+        uv run scripts/code-check.sh
+        uv lock --locked
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
