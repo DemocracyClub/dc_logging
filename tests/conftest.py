@@ -102,6 +102,10 @@ def cdk(mock_aws_services):
     ) as f:
         template = f.read()
     parsed = yaml.safe_load(template)
+    if not isinstance(parsed, dict):
+        raise TypeError(
+            f"Expected 'parsed' to be a dict. Instead, got {type(parsed)}\n{parsed =}\n"
+        )
     assets_bucket_name = None
     lambda_zips = {}
     for name, spec in parsed["Resources"].items():
