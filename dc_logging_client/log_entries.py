@@ -71,6 +71,7 @@ class PostcodeLogEntry(BaseLogEntry, UTMMixin, ValidDCProductMixin):
     timestamp: datetime.datetime = field(default_factory=datetime.datetime.now)
     api_key: str = ""
     calls_devs_dc_api: bool = False
+    had_election: bool = False
 
     def __post_init__(self):
         super().__post_init__()
