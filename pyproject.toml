@@ -4,7 +4,7 @@ authors = [
   {name = "Sym Roe", email = "sym.roe@democracyclub.org.uk"},
 ]
 license = "BSD-3-Clause"
-version = "2.0.0"
+version = "3.0.0"
 description = "DC Logging client and log querying infrastructure"
 readme= "README.md"
 requires-python = ">=3.11"
