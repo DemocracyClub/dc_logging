@@ -37,6 +37,7 @@ def test_log(cdk, mock_log_streams):
         "api_key": "",
         "dc_product": "WCIVF",
         "postcode": "SW1A 1AA",
+        "had_election": False,
         "utm_campaign": "",
         "utm_medium": "",
         "utm_source": "",
