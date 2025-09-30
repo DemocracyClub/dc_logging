@@ -25,7 +25,6 @@ aws = [
     "wheel==0.38.4",
     "urllib3==1.26.19",
     "attrs==23.1.0",
-    "dc-logging-utils",
 ]
 dev = [
     "boto3==1.35.99",
@@ -45,9 +44,6 @@ dev = [
 
 [tool.uv]
 required-version = "==0.8.*"
-
-[tool.uv.sources]
-dc-logging-utils = { path = "." }
 
 [tool.uv.build-backend]
 module-name = "dc_logging_client"
