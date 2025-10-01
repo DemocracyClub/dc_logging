@@ -22,6 +22,7 @@ dc_postcode_searches_table = GlueTable(
         "timestamp": glue.Schema.TIMESTAMP,
         "api_key": glue.Schema.STRING,
         "calls_devs_dc_api": glue.Schema.STRING,
+        "had_election": glue.Schema.STRING,
     },
     partition_keys=[
         glue.Column(
