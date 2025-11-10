@@ -23,7 +23,6 @@ aws = [
     "constructs==10.4.2",
     "cachetools==v5.2.0",
     "wheel==0.38.4",
-    "urllib3==1.26.19",
     "attrs==23.1.0",
 ]
 dev = [
