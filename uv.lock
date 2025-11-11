@@ -548,7 +548,7 @@ dev = [
     { name = "mypy-boto3-organizations", specifier = "==1.28.36" },
     { name = "mypy-boto3-ssm", specifier = "==1.38.5" },
     { name = "psycopg", extras = ["binary"], specifier = "==3.2.9" },
-    { name = "pytest", specifier = "==7.2.2" },
+    { name = "pytest", specifier = "==8.4.2" },
     { name = "pytest-cov", specifier = "==6.1.1" },
     { name = "pytest-ruff", specifier = "==0.4.1" },
     { name = "ruff", specifier = "==0.1.8" },
@@ -1353,18 +1353,18 @@ wheels = [
 
 [[package]]
 name = "pytest"
-version = "7.2.2"
+version = "8.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "attrs" },
     { name = "colorama", marker = "sys_platform == 'win32'" },
     { name = "iniconfig" },
     { name = "packaging" },
     { name = "pluggy" },
+    { name = "pygments" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b9/29/311895d9cd3f003dd58e8fdea36dd895ba2da5c0c90601836f7de79f76fe/pytest-7.2.2.tar.gz", hash = "sha256:c99ab0c73aceb050f68929bc93af19ab6db0558791c6a0715723abe9d0ade9d4", size = 1320028, upload-time = "2023-03-03T19:12:29.775Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a3/5c/00a0e072241553e1a7496d638deababa67c5058571567b92a7eaa258397c/pytest-8.4.2.tar.gz", hash = "sha256:86c0d0b93306b961d58d62a4db4879f27fe25513d4b969df351abdddb3c30e01", size = 1519618, upload-time = "2025-09-04T14:34:22.711Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b2/68/5321b5793bd506961bd40bdbdd0674e7de4fb873ee7cab33dd27283ad513/pytest-7.2.2-py3-none-any.whl", hash = "sha256:130328f552dcfac0b1cec75c12e3f005619dc5f874f0a06e8ff7263f0ee6225e", size = 317207, upload-time = "2023-03-03T19:12:27.611Z" },
+    { url = "https://files.pythonhosted.org/packages/a8/a4/20da314d277121d6534b3a980b29035dcd51e6744bd79075a6ce8fa4eb8d/pytest-8.4.2-py3-none-any.whl", hash = "sha256:872f880de3fc3a5bdc88a11b39c9710c3497a547cfa9320bc3c5e62fbf272e79", size = 365750, upload-time = "2025-09-04T14:34:20.226Z" },
 ]
 
 [[package]]
