@@ -23,7 +23,7 @@ aws = [
     "constructs==10.4.2",
     "cachetools==v5.2.0",
     "wheel==0.38.4",
-    "attrs==23.1.0",
+    "attrs==25.4.0",
 ]
 dev = [
     "boto3==1.35.99",
