@@ -17,7 +17,7 @@ tracker = "https://github.com/DemocracyClub/dc_logging/issues"
 [dependency-groups]
 aws = [
     # Matches the Node version of the CDK in package.json
-    "aws-cdk-lib==2.200.1",
+    "aws-cdk-lib==2.221.1",
     "aws_cdk.aws_lambda_python_alpha==2.200.1a0",
     "aws-cdk.aws-glue-alpha==2.200.1a0",
     "constructs==10.4.2",
