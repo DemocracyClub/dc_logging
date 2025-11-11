@@ -35,7 +35,7 @@ dev = [
     "pytest-ruff==0.4.1",
     "pytest-cov==6.1.1",
     "boto3-stubs[firehose,s3,sts,organizations,lambda]==1.28.80",
-    "psycopg[binary]==3.2.9",
+    "psycopg[binary]==3.2.12",
     "tqdm==4.67.1",
     "moto[firehose,awslambda,apigateway,proxy,sts]==5.0.19",
     "yamllint==1.37.1",
