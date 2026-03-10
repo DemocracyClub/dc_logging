@@ -807,14 +807,14 @@ wheels = [
 
 [[package]]
 name = "joserfc"
-version = "1.6.0"
+version = "1.6.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/71/a0/e77842f16d07ef8d23faf9cf675f2f5b358b093253b41b53f6214a52e5e7/joserfc-1.6.0.tar.gz", hash = "sha256:27946ee53f591c2da65b726a663a68f0fb000732eaadfe819bbbda6429702ad0", size = 225982, upload-time = "2025-12-14T05:20:38.852Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ce/90/b8cc8635c4ce2e5e8104bf26ef147f6e599478f6329107283cdc53aae97f/joserfc-1.6.3.tar.gz", hash = "sha256:c00c2830db969b836cba197e830e738dd9dda0955f1794e55d3c636f17f5c9a6", size = 229090, upload-time = "2026-02-25T15:33:38.167Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ac/2b/94a31afef483ea5ac05c3545defed42704e941713dff5d9dbe5212ad5452/joserfc-1.6.0-py3-none-any.whl", hash = "sha256:14ed0d9cef03aa9332452cbcc59ff31c8c7b3f9737401a9ead3009c2a914bf54", size = 70259, upload-time = "2025-12-14T05:20:37.238Z" },
+    { url = "https://files.pythonhosted.org/packages/12/4f/124b3301067b752f44f292f0b9a74e837dd75ff863ee39500a082fc4c733/joserfc-1.6.3-py3-none-any.whl", hash = "sha256:6beab3635358cbc565cb94fb4c53d0557e6d10a15b933e2134939351590bda9a", size = 70465, upload-time = "2026-02-25T15:33:36.997Z" },
 ]
 
 [[package]]
@@ -2142,14 +2142,14 @@ wheels = [
 
 [[package]]
 name = "werkzeug"
-version = "3.1.5"
+version = "3.1.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markupsafe" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5a/70/1469ef1d3542ae7c2c7b72bd5e3a4e6ee69d7978fa8a3af05a38eca5becf/werkzeug-3.1.5.tar.gz", hash = "sha256:6a548b0e88955dd07ccb25539d7d0cc97417ee9e179677d22c7041c8f078ce67", size = 864754, upload-time = "2026-01-08T17:49:23.247Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/61/f1/ee81806690a87dab5f5653c1f146c92bc066d7f4cebc603ef88eb9e13957/werkzeug-3.1.6.tar.gz", hash = "sha256:210c6bede5a420a913956b4791a7f4d6843a43b6fcee4dfa08a65e93007d0d25", size = 864736, upload-time = "2026-02-19T15:17:18.884Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ad/e4/8d97cca767bcc1be76d16fb76951608305561c6e056811587f36cb1316a8/werkzeug-3.1.5-py3-none-any.whl", hash = "sha256:5111e36e91086ece91f93268bb39b4a35c1e6f1feac762c9c822ded0a4e322dc", size = 225025, upload-time = "2026-01-08T17:49:21.859Z" },
+    { url = "https://files.pythonhosted.org/packages/4d/ec/d58832f89ede95652fd01f4f24236af7d32b70cab2196dfcc2d2fd13c5c2/werkzeug-3.1.6-py3-none-any.whl", hash = "sha256:7ddf3357bb9564e407607f988f683d72038551200c704012bb9a4c523d42f131", size = 225166, upload-time = "2026-02-19T15:17:17.475Z" },
 ]
 
 [[package]]
