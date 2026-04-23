@@ -24,23 +24,27 @@ WITH ELECTION_PERIOD AS (
     )
 ), PRODUCT_COUNTS AS (
     SELECT
-        count(*) AS count, "dc_product", '' AS key_name, '' AS user_name, '' AS email, utm_source
+        count(*) AS count, count(CASE WHEN had_election = 'true' THEN 1 END) AS had_election_true, count(CASE WHEN had_election = 'false' THEN 1 END) AS had_election_false,
+        "dc_product", '' AS key_name, '' AS user_name, '' AS email, utm_source
         FROM LOGS
         WHERE dc_product = 'WDIV'
         GROUP BY "dc_product", "api_key", "utm_source"
     UNION SELECT
-        count(*) AS count, "dc_product", '' AS key_name, '' AS user_name, '' AS email, utm_source
+        count(*) AS count, count(CASE WHEN had_election = 'true' THEN 1 END) AS had_election_true, count(CASE WHEN had_election = 'false' THEN 1 END) AS had_election_false,
+        "dc_product", '' AS key_name, '' AS user_name, '' AS email, utm_source
         FROM LOGS
         WHERE dc_product = 'WCIVF'
         GROUP BY "dc_product", "api_key", "utm_source"
     UNION SELECT
-        count(*) AS count, "dc_product", api_users."key_name", api_users."user_name", api_users."email", utm_source
+        count(*) AS count, count(CASE WHEN had_election = 'true' THEN 1 END) AS had_election_true, count(CASE WHEN had_election = 'false' THEN 1 END) AS had_election_false,
+        "dc_product", api_users."key_name", api_users."user_name", api_users."email", utm_source
         FROM LOGS
             JOIN "dc-wide-logs"."ec_api_keys" as api_users ON LOGS."api_key" = api_users."key"
         WHERE dc_product = 'EC_API'
         GROUP BY "dc_product", "key_name", "user_name", "utm_source", "email"
     UNION SELECT
-        count(*) AS count, "dc_product", api_users."key_name", api_users."user_name", api_users."email", utm_source
+        count(*) AS count, count(CASE WHEN had_election = 'true' THEN 1 END) AS had_election_true, count(CASE WHEN had_election = 'false' THEN 1 END) AS had_election_false,
+        "dc_product", api_users."key_name", api_users."user_name", api_users."email", utm_source
         FROM LOGS
             JOIN "dc-wide-logs"."devs_dc_api_keys" as api_users ON LOGS."api_key" = api_users."key"
         WHERE
