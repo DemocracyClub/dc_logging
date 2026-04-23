@@ -24,6 +24,8 @@ WITH ELECTION_PERIOD AS (
     )
 )
 SELECT
-    count(*) as count
+    count(*) AS total,
+    count(CASE WHEN had_election = 'true' THEN 1 END) AS had_election_true,
+    count(CASE WHEN had_election = 'false' THEN 1 END) AS had_election_false
 FROM
     LOGS
