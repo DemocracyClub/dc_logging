@@ -24,12 +24,12 @@ WITH ELECTION_PERIOD AS (
     )
 )
 SELECT
-    oslaua as gss,
+    lad25cd as gss,
     count(*) as postcode_searches,
     count(CASE WHEN had_election = 'true' THEN 1 END) AS had_election_true,
     count(CASE WHEN had_election = 'false' THEN 1 END) AS had_election_false
 FROM
     LOGS JOIN "pollingstations.public.data"."onspd_table"
         ON upper(replace(replace("postcode",' ', '' ),'+','')) = upper(replace( "pcds",' ', ''))
-GROUP BY oslaua
+GROUP BY lad25cd
 ORDER BY postcode_searches DESC;
