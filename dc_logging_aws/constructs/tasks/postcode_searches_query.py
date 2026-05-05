@@ -1,8 +1,11 @@
 from typing import Optional
 
+from aws_cdk import aws_iam as iam
+from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_stepfunctions as sfn
 from aws_cdk import aws_stepfunctions_tasks as tasks
 from constructs import Construct
+from models.buckets import postcode_searches_results_bucket
 from models.models import BaseQuery
 
 
@@ -78,6 +81,40 @@ class PostcodeSearchesQueryTask(Construct):
             },
         )
 
-        self.task = query_task
+        results_bucket = s3.Bucket.from_bucket_name(
+            self,
+            "results_bucket",
+            postcode_searches_results_bucket.bucket_name,
+        )
+        bucket_name = results_bucket.bucket_name
+        copy_source = (
+            "{% '"
+            + bucket_name
+            + "/postcode-searches-athena-results/' & $"
+            + result_variable_name
+            + " & '.csv' %}"
+        )
+        dest_key = (
+            "{% $polling_day_athena & '/" + result_variable_name + ".csv' %}"
+        )
+        copy_task = tasks.CallAwsService(
+            self,
+            f"{task_name} Copy Result",
+            service="s3",
+            action="copyObject",
+            parameters={
+                "Bucket": bucket_name,
+                "CopySource": copy_source,
+                "Key": dest_key,
+            },
+            iam_resources=[results_bucket.arn_for_objects("*")],
+            additional_iam_statements=[
+                iam.PolicyStatement(
+                    actions=["s3:GetObject"],
+                    resources=[results_bucket.arn_for_objects("*")],
+                )
+            ],
+            query_language=sfn.QueryLanguage.JSONATA,
+        )
 
-        # ToDo: Do something with the result
+        self.task = query_task.next(copy_task)

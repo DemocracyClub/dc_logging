@@ -91,7 +91,7 @@ class PostcodeSearchesStack(Stack):
             timeout=Duration.minutes(10),
         )
 
-    def query_tasks(self) -> List[tasks.LambdaInvoke]:
+    def query_tasks(self) -> List[sfn.IChainable]:
         return [
             PostcodeSearchesQueryTask(
                 scope=self,
