@@ -108,6 +108,7 @@ class PostcodeSearchesQueryTask(Construct):
                 "Key": dest_key,
             },
             iam_resources=[results_bucket.arn_for_objects("*")],
+            iam_action="s3:PutObject",
             additional_iam_statements=[
                 iam.PolicyStatement(
                     actions=["s3:GetObject"],
