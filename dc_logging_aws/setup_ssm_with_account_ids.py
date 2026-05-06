@@ -1,6 +1,6 @@
 """
-Run this script as an organisation admin to create the SSM entries in the 
-monitoring accounts 
+Run this script as an organisation admin to create the SSM entries in the
+monitoring accounts
 """
 
 import boto3

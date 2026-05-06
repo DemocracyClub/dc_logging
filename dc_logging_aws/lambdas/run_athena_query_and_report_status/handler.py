@@ -2,6 +2,7 @@
 A generic Lambda that can run an Athena query and wait for it to complete
 
 """
+
 import os
 import time
 
