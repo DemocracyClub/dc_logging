@@ -9,7 +9,7 @@ WITH ELECTION_PERIOD AS (
             OR
                 (all_logs."dc_product" = 'WDIV' AND replace(all_logs."postcode",' ','') != 'BS44NN') --updown
         )
-        AND LOWER("calls_devs_dc_api") = 'false'
+        AND (LOWER("calls_devs_dc_api") = 'false' OR "dc_product" = 'EC_API')
 ), LOGS AS (
     SELECT *
     FROM ELECTION_PERIOD
@@ -31,12 +31,6 @@ WITH ELECTION_PERIOD AS (
         GROUP BY "dc_product", "api_key", "utm_source"
     UNION SELECT
         count(*) AS count, count(CASE WHEN had_election = 'true' THEN 1 END) AS had_election_true, count(CASE WHEN had_election = 'false' THEN 1 END) AS had_election_false,
-        "dc_product", '' AS key_name, '' AS user_name, '' AS email, utm_source
-        FROM LOGS
-        WHERE dc_product = 'WCIVF'
-        GROUP BY "dc_product", "api_key", "utm_source"
-    UNION SELECT
-        count(*) AS count, count(CASE WHEN had_election = 'true' THEN 1 END) AS had_election_true, count(CASE WHEN had_election = 'false' THEN 1 END) AS had_election_false,
         "dc_product", api_users."key_name", api_users."user_name", api_users."email", utm_source
         FROM LOGS
             JOIN "dc-wide-logs"."ec_api_keys" as api_users ON LOGS."api_key" = api_users."key"
@@ -50,7 +44,7 @@ WITH ELECTION_PERIOD AS (
         WHERE
             dc_product = 'AGGREGATOR_API'
             AND api_users."key_name" NOT IN (
-                'EC postcode pages - Dev', 'WhoCanIVoteFor', 'Updown', 'EC API'
+                'EC postcode pages - Dev', 'Updown', 'EC API'
             )
         GROUP BY "dc_product", "key_name", "user_name", "utm_source", "email"
 )
