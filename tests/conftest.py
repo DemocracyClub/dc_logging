@@ -166,9 +166,11 @@ def cdk(mock_aws_services):
     for resource in cf_mock.describe_stack_resources(StackName="Test")[
         "StackResources"
     ]:
-        if resource["ResourceType"] == "AWS::Lambda::Function" and resource[
-            "PhysicalResourceId"
-        ].startswith("ingest-"):
+        if resource.get(
+            "ResourceType"
+        ) == "AWS::Lambda::Function" and resource.get(
+            "PhysicalResourceId", ""
+        ).startswith("ingest-"):
             test_data["ingest_functions"].append(resource["PhysicalResourceId"])
             test_data["function_name"] = resource["PhysicalResourceId"]
     yield test_data

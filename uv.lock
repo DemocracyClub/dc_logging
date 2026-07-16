@@ -645,7 +645,7 @@ dev = [
     { name = "boto3", specifier = "==1.35.99" },
     { name = "boto3-stubs", extras = ["firehose", "s3", "sts", "organizations", "lambda"], specifier = "==1.28.80" },
     { name = "ipdb", specifier = "==0.13.13" },
-    { name = "moto", extras = ["firehose", "awslambda", "apigateway", "proxy", "sts"], specifier = "==5.0.19" },
+    { name = "moto", extras = ["firehose", "awslambda", "apigateway", "proxy", "sts"], specifier = "==5.2.2" },
     { name = "mypy-boto3-organizations", specifier = "==1.28.36" },
     { name = "mypy-boto3-ssm", specifier = "==1.38.5" },
     { name = "psycopg", extras = ["binary"], specifier = "==3.2.9" },
@@ -785,18 +785,6 @@ wheels = [
 ]
 
 [[package]]
-name = "jinja2"
-version = "3.1.6"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "markupsafe" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/df/bf/f7da0350254c0ed7c72f3e33cef02e048281fec7ecec5f032d4aac52226b/jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d", size = 245115, upload-time = "2025-03-05T20:05:02.478Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67", size = 134899, upload-time = "2025-03-05T20:05:00.369Z" },
-]
-
-[[package]]
 name = "jmespath"
 version = "1.0.1"
 source = { registry = "https://pypi.org/simple" }
@@ -833,18 +821,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b0/e2/2950c7891f4ccf301be5e4fad8781169aa7dde2d267d4990debb6aeadac3/jsii-1.121.0.tar.gz", hash = "sha256:6c003ae10916bedce0cdf4cf86389435265ee151581e57429d0dd8aecb495be1", size = 625665, upload-time = "2025-12-09T17:25:08.544Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e1/08/986dfcdb0e7cba3edca74219e3d86b00623ccf0c8d7bdd62dea3947766ff/jsii-1.121.0-py3-none-any.whl", hash = "sha256:e7e10f020cfce01951956750fea50a863955e21aae202ee7f129b873f9d4988b", size = 601786, upload-time = "2025-12-09T17:25:07.194Z" },
-]
-
-[[package]]
-name = "jsondiff"
-version = "2.2.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pyyaml" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/35/48/841137f1843fa215ea284834d1514b8e9e20962bda63a636c7417e02f8fb/jsondiff-2.2.1.tar.gz", hash = "sha256:658d162c8a86ba86de26303cd86a7b37e1b2c1ec98b569a60e2ca6180545f7fe", size = 26649, upload-time = "2024-08-29T04:09:06.201Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/63/94/a8066f84d62ab666d61ef97deba1a33126e3e5c0c0da2c458ada17053ed6/jsondiff-2.2.1-py3-none-any.whl", hash = "sha256:b1f0f7e2421881848b1d556d541ac01a91680cfcc14f51a9b62cdf4da0e56722", size = 13440, upload-time = "2024-08-29T04:09:04.955Z" },
 ]
 
 [[package]]
@@ -1049,22 +1025,20 @@ wheels = [
 
 [[package]]
 name = "moto"
-version = "5.0.19"
+version = "5.2.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "boto3" },
     { name = "botocore" },
     { name = "cryptography" },
-    { name = "jinja2" },
-    { name = "python-dateutil" },
     { name = "requests" },
     { name = "responses" },
     { name = "werkzeug" },
     { name = "xmltodict" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/76/ce/19f364c867423e4f5aceabec23c21ee5d3633f9f518d687a39336e324235/moto-5.0.19.tar.gz", hash = "sha256:e6c6e1558f65c01fe1b3b5cc7ee35b474167fe3600326990f54601d75a7ea639", size = 6203233, upload-time = "2024-11-03T10:43:27.697Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/47/63/d944f387582cc53f53febbff2b3fa36a6d2ed7c1feef8990bf646cfa9cba/moto-5.2.2.tar.gz", hash = "sha256:aac8023a429e125e91c91f8f4730a67b54f518cda587352f7e67252fe3168f75", size = 8678761, upload-time = "2026-06-06T18:57:54.931Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a6/a8/051d9b628be42555bcad97d7153346bd477e06980494afbe565b59849ed9/moto-5.0.19-py2.py3-none-any.whl", hash = "sha256:b9c4911549f5cbb2db0b8d0c7adb27b332300a3ecdc90422777538760e026963", size = 4360791, upload-time = "2024-11-03T10:43:24.284Z" },
+    { url = "https://files.pythonhosted.org/packages/c1/45/13cff46f4f617a6e97e1d497d75abd913e250bb4c823a4985668c6e593e4/moto-5.2.2-py3-none-any.whl", hash = "sha256:3817f1e39721ca833579b921e53e3b68547ace6a34d848c9486fbb5905808de9", size = 6698689, upload-time = "2026-06-06T18:57:51.435Z" },
 ]
 
 [package.optional-dependencies]
@@ -1083,7 +1057,6 @@ proxy = [
     { name = "docker" },
     { name = "graphql-core" },
     { name = "joserfc" },
-    { name = "jsondiff" },
     { name = "jsonpath-ng" },
     { name = "multipart" },
     { name = "openapi-spec-validator" },
@@ -1386,11 +1359,11 @@ wheels = [
 
 [[package]]
 name = "py-partiql-parser"
-version = "0.5.6"
+version = "0.6.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/de/91/9d499c960abea0efda9e81aa62bd8dd1eab1daa12db9b3b0064fe2f8b3c7/py_partiql_parser-0.5.6.tar.gz", hash = "sha256:6339f6bf85573a35686529fc3f491302e71dd091711dfe8df3be89a93767f97b", size = 16926, upload-time = "2024-09-06T21:07:15.218Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/56/7a/a0f6bda783eb4df8e3dfd55973a1ac6d368a89178c300e1b5b91cd181e5e/py_partiql_parser-0.6.3.tar.gz", hash = "sha256:09cecf916ce6e3da2c050f0cb6106166de42c33d34a078ec2eb19377ea70389a", size = 17456, upload-time = "2025-10-18T13:56:13.441Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2c/24/46262d45ee9e54a181c440fe1a3d87fd538d69f10c8311f699e555119d1f/py_partiql_parser-0.5.6-py2.py3-none-any.whl", hash = "sha256:622d7b0444becd08c1f4e9e73b31690f4b1c309ab6e5ed45bf607fe71319309f", size = 23237, upload-time = "2024-09-06T21:07:13.763Z" },
+    { url = "https://files.pythonhosted.org/packages/c9/33/a7cbfccc39056a5cf8126b7aab4c8bafbedd4f0ca68ae40ecb627a2d2cd3/py_partiql_parser-0.6.3-py2.py3-none-any.whl", hash = "sha256:deb0769c3346179d2f590dcbde556f708cdb929059fb654bad75f4cf6e07f582", size = 23752, upload-time = "2025-10-18T13:56:12.256Z" },
 ]
 
 [[package]]
