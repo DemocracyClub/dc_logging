@@ -69,7 +69,7 @@ class BaseLoggingClient(abc.ABC):
                 )
             if response.get("FunctionError"):
                 logger.warning(
-                    f"Failed to log `{data.as_log_line()}`. Got `{response["Payload"].read().decode('utf-8')}`"
+                    f"Failed to log `{data.as_log_line()}`. Got `{response['Payload'].read().decode('utf-8')}`"
                 )
 
 

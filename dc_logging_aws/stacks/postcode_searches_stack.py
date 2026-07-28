@@ -185,12 +185,12 @@ class PostcodeSearchesStack(Stack):
 
     def collect_buckets(self):
         for bucket in self.s3_buckets():
-            self.buckets_by_name[
-                bucket.bucket_name
-            ] = s3.Bucket.from_bucket_name(
-                self,
-                f"{bucket.bucket_name}_bucket",
-                bucket.bucket_name,
+            self.buckets_by_name[bucket.bucket_name] = (
+                s3.Bucket.from_bucket_name(
+                    self,
+                    f"{bucket.bucket_name}_bucket",
+                    bucket.bucket_name,
+                )
             )
 
     def existing_tables(self) -> List[GlueTable]:
