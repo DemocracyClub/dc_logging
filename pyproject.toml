@@ -29,7 +29,7 @@ dev = [
     "boto3==1.35.99",
     "mypy-boto3-organizations==1.28.36",
     "mypy-boto3-ssm==1.38.5",
-    "ruff==0.1.8",
+    "ruff==0.15.22",
     "ipdb==0.13.13",
     "pytest==9.0.3",
     "pytest-ruff==0.4.1",
