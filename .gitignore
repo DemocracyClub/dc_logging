@@ -1,3 +1,6 @@
+# Query results
+dc_logging_aws/named_queries/results
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
